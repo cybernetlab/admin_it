@@ -1,0 +1,21 @@
+nav class="navbar"
+  div class="container"
+    - if admin_context.collection?
+      - if admin_resource.contexts.key?(:new)
+        a(
+          class="btn btn-success"
+          href="#{admin_resource.contexts[:new].path}"
+        )
+          i class="fa fa-plus"
+          = ' ' + t('admin_it.action.create')
+      - collections = admin_resource.contexts \
+                                    .select { |_, c| c.collection? }
+      - if collections.size > 1
+        - hash = { list: 'fa-bars', table: 'fa-table', tiles: 'fa-th' }
+        div class="btn-group pull-right"
+          - collections.each do |name, context|
+            a(
+              class="btn#{name == admin_context.name ? ' active' : ''} btn-default"
+              href==context.path
+            )
+              i class="fa #{hash[name]}"

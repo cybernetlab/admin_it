@@ -1,0 +1,7 @@
+ru:
+  admin_it:
+    collection:
+      no_data: 'Нет данных'
+
+    action:
+      create: 'Создать'

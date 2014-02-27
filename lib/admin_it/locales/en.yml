@@ -1,0 +1,7 @@
+en:
+  admin_it:
+    collection:
+      no_data: 'No data'
+
+    action:
+      create: 'Create'

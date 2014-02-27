@@ -1,0 +1,19 @@
+= render File.join %w(admin_it shared pagination)
+
+- if admin_context.entities.count == 0
+  h2: small = t 'admin_it.collection.no_data'
+- else
+  = admin_table class: 'table-bordered table-condensed' do |table|
+    = table.header do |header|
+      - admin_context.headers.values.each do |h|
+        = header.cell(h)
+      - if admin_context.actions?
+        th style='border: none'
+    - admin_context.entities.each do |columns|
+      = table.row do |row|
+        - columns.each { |k, v| row.cell v.to_s, column: k }
+        - if admin_context.actions?
+          = row.actions style: 'width: 80px; border: none', class: 'text-right'
+
+
+= render File.join %w(admin_it shared pagination)

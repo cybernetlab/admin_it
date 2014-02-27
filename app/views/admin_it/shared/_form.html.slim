@@ -1,0 +1,36 @@
+- if admin_context.name == :new
+  - action = admin_resource.collection_path
+- else
+  - action = admin_resource.single_path(admin_context.entity)
+
+form(
+  class="form-horizontal"
+  role="form"
+  action==action
+  method="POST"
+)
+  input name="authenticity_token" type="hidden" value==form_authenticity_token
+  - if admin_context.name == :edit
+    input name="_method" type="hidden" value="patch"
+  - values = admin_context.values
+  - admin_context.fields(scope: :all).each do |field|
+    - next if field.type == :relation
+    - name = "#{admin_resource.name}[#{field.name}]"
+    - id = "#{admin_resource.name}_#{field.name}"
+    - if field.visible?
+      div class="form-group"
+        label for="#{id}" class="col-sm-2 control-label"
+          = field.display_name
+        div class="col-sm-10"
+          input(
+            type="text"
+            class="form-control"
+            id==id
+            name==name
+            value==values[field.name]
+          )
+    - else
+      input type="hidden" name==name id==id value==values[field.name]
+  div class="form-group"
+    div class="col-sm-10 col-sm-offset-2"
+      button class="btn btn-primary" Save

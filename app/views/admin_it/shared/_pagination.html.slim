@@ -1,0 +1,39 @@
+- if admin_context.pages > 1
+  div class="text-center"
+    ul class="pagination"
+      - if admin_context.page == 1
+        li.disabled: a href="#"
+          i class="fa fa-angle-double-left"
+        li.disabled: a href="#"
+          i class="fa fa-angle-left"
+      - else
+        li: a href="#{url_for(page: 'first')}"
+          i class="fa fa-angle-double-left"
+        li: a href="#{url_for(page: 'prev')}"
+          i class="fa fa-angle-left"
+      - start = 1
+      - if admin_context.pages > 10
+        - start = admin_context.page - 5 if admin_context.page > 5
+        - if admin_context.page > 6
+          li.disabled: a href="#" ...
+      - start = admin_context.pages - 10 if start > admin_context.pages - 10
+      - start.upto(start + 10).each do |page|
+        - break if page > admin_context.pages
+        - next if page < 1
+        - if page == admin_context.page
+          li.active: a href="#" = page
+        - else
+          li: a href="#{url_for(page: page)}" = page
+      - if admin_context.pages > 10 && \
+           admin_context.page < admin_context.pages - 5
+        li.disabled: a href="#" ...
+      - if admin_context.page == admin_context.pages
+        li.disabled: a href="#"
+          i class="fa fa-angle-right"
+        li.disabled: a href="#"
+          i class="fa fa-angle-double-right"
+      - else
+        li: a href="#{url_for(page: 'next')}"
+          i class="fa fa-angle-right"
+        li: a href="#{url_for(page: 'last')}"
+          i class="fa fa-angle-double-right"

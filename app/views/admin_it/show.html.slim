@@ -1,0 +1,6 @@
+dl class="dl-horizontal"
+  - values = admin_context.values
+  - admin_context.fields.each do |field|
+    - next if field.type == :relation
+    dt = field.display_name
+    dl = values[field.name]

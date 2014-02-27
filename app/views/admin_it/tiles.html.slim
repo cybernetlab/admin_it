@@ -1,0 +1,17 @@
+- admin_context.entities.each do |record|
+  div class="col-md-3"
+    div class="thumbnail admin-tile"
+      - actions = admin_resource.contexts.select { |n, c| c.single? && n != :new }
+      - if actions.size > 0
+        div class="btn-group-vertical btn-group-sm pull-right admin-tile-actions fade"
+          - actions.each do |name, context|
+            a(
+              class="btn #{name == :show ? 'btn-info' : 'btn-default'}"
+              href==context.path(admin_context.entity)
+            )
+              i class="fa fa-#{name == :show ? 'info-circle' : 'pencil'}"
+      = admin_tile_header record[admin_context.header]
+      - record.each do |k, v|
+        - next if k == admin_context.header
+        - next if admin_context.class.find_field(k).type == :relation
+        p = v

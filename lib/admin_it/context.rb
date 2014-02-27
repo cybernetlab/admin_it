@@ -1,0 +1,5 @@
+require File.join %w(admin_it context context)
+require File.join %w(admin_it context single_context)
+require File.join %w(admin_it context collection_context)
+require File.join %w(admin_it context table_context)
+require File.join %w(admin_it context tiles_context)
