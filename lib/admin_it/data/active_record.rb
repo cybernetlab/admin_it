@@ -6,7 +6,7 @@ module AdminIt
       def display_name
         entity_class
           .model_name
-          .human(count: 2)
+          .human#(count: 0)
           .split(' ')
           .map { |s| s.mb_chars.capitalize }
           .join(' ')
