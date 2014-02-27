@@ -14,4 +14,6 @@
       - record.each do |k, v|
         - next if k == admin_context.header
         - next if admin_context.class.find_field(k).type == :relation
-        p = v
+        p
+          strong = admin_context.class.find_field(k).display_name + ': '
+          = v
