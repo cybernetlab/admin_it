@@ -32,7 +32,7 @@ module AdminIt
           end
         if single.key?(:show)
           buttons << @template.link_to(
-            html_safe('<i class="fa fa-minus"></i>'),
+            html_safe('<i class="fa fa-trash-o"></i>'),
             single[:show].path(@template.admin_context.entity),
             method: :delete,
             class: 'btn btn-xs btn-danger'
