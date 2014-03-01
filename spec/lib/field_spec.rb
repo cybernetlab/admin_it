@@ -1,14 +1,14 @@
 require 'spec_helper'
 
-describe AdminIt::Field do
-  subject { described_class.new(:name) }
+describe AdminIt::Field, type: :context do
+  subject { described_class.new(:name, object_class) }
 
   it 'has name reader' do
     expect(subject.name).to eq :name
   end
 
   it 'converts name to symbol' do
-    expect(described_class.new('test').name).to eq :test
+    expect(described_class.new('test', object_class).name).to eq :test
   end
 
   it 'has :unknown type by default' do
@@ -21,12 +21,12 @@ describe AdminIt::Field do
   end
 
   it 'rejects reads of write-only fields' do
-    f = described_class.new(:name, read: false)
+    f = described_class.new(:name, object_class, readable: false)
     expect { f.read(Object.new) }.to raise_error AdminIt::FieldReadError
   end
 
   it 'rejects writes to read-only fields' do
-    f = described_class.new(:name, write: false)
+    f = described_class.new(:name, object_class, writable: false)
     expect { f.write(Object.new, 1) }.to raise_error AdminIt::FieldWriteError
   end
 

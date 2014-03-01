@@ -2,41 +2,42 @@ module AdminIt
   class TableContext < CollectionContext
     @row_block = nil
 
-    def self.copy
-      proc do |source|
-        if source <= TableContext
-          @row_block = source.row
-          @page_size = source.page_size
+    class << self
+      def copy
+        proc do |source|
+          if source <= TableContext
+            @row_block = source.row
+            @page_size = source.page_size
+          end
         end
       end
-    end
 
-    def self.row(&block)
-      if block.nil?
-        @row_block
-      else
-        @row_block = block
+      def row(&block)
+        block.nil? ? @row_block : @row_block = block
       end
-    end
 
-    def self.page_size(value = nil)
-      if value.nil?
-        @page_size ||= 10
-      else
-        @page_size = value
+      def page_size(value = nil)
+        value.nil? ? @page_size ||= 10 : @page_size = value
       end
-    end
 
-    def self.actions(value)
-      @actions = value == true
-    end
+      def actions(value)
+        @actions = value == true
+      end
 
-    def self.actions?
-      @actions.nil? ? @actions = true : @actions == true
-    end
+      def actions?
+        @actions.nil? ? @actions = true : @actions == true
+      end
 
-    def self.path
-      AdminIt::Engine.routes.url_helpers.send("table_#{resource.plural}_path")
+      def path
+        AdminIt::Engine.routes
+          .url_helpers.send("table_#{resource.plural}_path")
+      end
+
+      protected
+
+      def default_icon
+        'table'
+      end
     end
 
     class_attr_reader :page_size, :actions?

@@ -1,7 +1,7 @@
-- if admin_context.name == :new
-  - action = admin_resource.collection_path
-- else
-  - action = admin_resource.single_path(admin_context.entity)
+- if context.is_a?(AdminIt::NewContext)
+  - action = resource.collection_path
+- elsif context.is_a?(AdminIt::EditContext)
+  - action = resource.single_path(context.entity)
 
 form(
   class="form-horizontal"
@@ -10,13 +10,12 @@ form(
   method="POST"
 )
   input name="authenticity_token" type="hidden" value==form_authenticity_token
-  - if admin_context.name == :edit
+  - if context.is_a?(AdminIt::EditContext)
     input name="_method" type="hidden" value="patch"
-  - values = admin_context.values
-  - admin_context.fields(scope: :all).each do |field|
+  - context.fields(scope: :all).each do |field|
     - next if field.type == :relation
-    - name = "#{admin_resource.name}[#{field.name}]"
-    - id = "#{admin_resource.name}_#{field.name}"
+    - name = "#{resource.name}[#{field.name}]"
+    - id = "#{resource.name}_#{field.name}"
     - if field.visible?
       div class="form-group"
         label for="#{id}" class="col-sm-2 control-label"
@@ -27,10 +26,10 @@ form(
             class="form-control"
             id==id
             name==name
-            value==values[field.name]
+            value==field.read(context.entity)
           )
     - else
-      input type="hidden" name==name id==id value==values[field.name]
+      input type="hidden" name==name id==id value==field.read(context.entity)
   div class="form-group"
     div class="col-sm-10 col-sm-offset-2"
-      button class="btn btn-primary" Save
+      button class="btn btn-primary" = t('admin_it.action.save')

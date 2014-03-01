@@ -8,23 +8,21 @@ module AdminIt
     TYPES = %i(unknown integer float string date relation enum)
 
     attr_reader :name, :entity_class
-    attr_accessor :block
 
     def initialize(
       name,
       entity_class,
       type: :unknown,
-      read: true,
-      write: true,
-      visible: true,
-      &block
+      readable: true,
+      writable: true,
+      visible: true
     )
-      name = name.to_sym if name.is_a?(String)
-      fail ArgumentError, 'Wrong field name' unless name.is_a?(Symbol)
-      @entity_class = entity_class
-      @name, @read, @write, @visible = name, read, write, visible
+      name = Utils.assert_symbol_arg!(name, name: 'name')
+      @name, @entity_class = name, entity_class
+      @readable = readable == true
+      @writable = writable == true
+      @visible = visible == true
       self.type(type)
-      instance_eval(&block) if block_given?
     end
 
     def display_name(value = nil)
@@ -44,15 +42,15 @@ module AdminIt
     end
 
     def readable?
-      @read == true
+      @readable
     end
 
     def writable?
-      @write == true
+      @writable
     end
 
     def visible?
-      @visible == true
+      @visible
     end
 
     def placeholder(value = nil)
@@ -108,15 +106,15 @@ module AdminIt
         name,
         entity_class,
         type: type,
-        read: readable?,
-        write: writable?,
+        readable: readable?,
+        writable: writable?,
         visible: visible?
       )
       singleton_class.included_modules.each { |m| field.extend(m) }
       field.display_name = display_name unless @display_name.nil?
       field.placeholder = placeholder unless @placeholder.nil?
       field.read(&@reader) unless @reader.nil?
-      field.writer(&@writer) unless @writer.nil?
+      field.write(&@writer) unless @writer.nil?
       field.render(&@renderer) unless @renderer.nil?
       field
     end

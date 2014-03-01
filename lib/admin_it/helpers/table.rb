@@ -8,32 +8,30 @@ module AdminIt
 
       before_capture do
         unless column.nil?
-          col = @template.admin_context.class.field(column)
+          col = @template.context.class.field(column)
           unless col.nil?
-            col.render(@template.admin_context.entity, self)
+            col.render(@template.context.entity, self)
           end
         end
       end
     end
 
     class ActionsCell < WrapIt::Base
-      ACTIONS = { show: 'info-circle', edit: 'pencil' }
-
       default_tag 'td'
 
       before_capture do
-        single = @template.admin_resource.contexts
-          .select { |c, _| ACTIONS.keys.include?(c) }
-        buttons = single.map do |c, context|
-            cl = c == :show ? 'btn-info' : 'btn-default'
-            href = context.path(@template.admin_context.entity)
-            "<a class=\"btn btn-xs #{cl}\" href=\"#{href}\">" \
-            "<i class=\"fa fa-#{ACTIONS[c]}\"></i></a>"
+        single = @template.resource.singles.select { |c| !(c <= NewContext) }
+        buttons = single.map do |context|
+            cl = context <= ShowContext ? 'info' : 'default'
+            href = context.path(@template.context.entity)
+            "<a class=\"btn btn-xs btn-#{cl}\" href=\"#{href}\">" \
+            "<i class=\"fa fa-#{context.icon}\"></i></a>"
           end
-        if single.key?(:show)
+        show = single.first { |c| c <= ShowContext }
+        unless show.nil?
           buttons << @template.link_to(
             html_safe('<i class="fa fa-trash-o"></i>'),
-            single[:show].path(@template.admin_context.entity),
+            show.path(@template.context.entity),
             method: :delete,
             class: 'btn btn-xs btn-danger'
           )
@@ -57,9 +55,9 @@ module AdminIt
       child :actions, ActionsCell
 
       before_capture do
-        block = @template.admin_context.class.row
+        block = @template.context.class.row
         unless block.nil?
-          instance_exec(@template.admin_context.entity, &block)
+          instance_exec(@template.context.entity, &block)
         end
       end
     end
@@ -69,7 +67,7 @@ module AdminIt
       html_class %w(table)
 
       def context
-        @template.admin_context
+        @template.context
       end
 
       child :header, Header

@@ -1,6 +1,5 @@
 dl class="dl-horizontal"
-  - values = admin_context.values
-  - admin_context.fields.each do |field|
-    - next if field.type == :relation
-    dt = field.display_name
-    dl = values[field.name]
+  - context.fields.each do |f|
+    - next if f.type == :relation
+    dt = f.display_name
+    = field f.read(context.entity), f, tag: 'dl'

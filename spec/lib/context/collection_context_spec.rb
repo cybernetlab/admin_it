@@ -1,13 +1,19 @@
 require 'spec_helper'
 
 describe AdminIt::CollectionContext do
-  subject { described_class.create_class.new }
+  let(:context_class) { described_class.create_class(:test, object_resource) }
+  subject { context_class.new }
 
+  # class DSL methods
+  it { expect(context_class.collection?).to be_true }
+  it { expect(context_class.single?).to be_false }
+
+  # instance methods
   it { expect(subject.collection?).to be_true }
   it { expect(subject.single?).to be_false }
 
-  it 'has entities setter, that sets mode to :collection' do
-    arr = [Object.new, Object.new]
+  it 'has entities setter' do
+    arr = [object_class.new, object_class.new]
     subject.entities = arr
     expect(subject.entities).to be_kind_of Enumerator
   end

@@ -1,18 +1,26 @@
 require 'spec_helper'
 
 describe AdminIt::SingleContext do
-  subject { described_class.create_class.new }
+  let(:context_class) { described_class.create_class(:test, object_resource) }
 
-  it { expect(subject.collection?).to be_false }
-  it { expect(subject.single?).to be_true }
+  describe 'DSL methods' do
+    subject { context_class }
 
-  it 'sets mode to :new for nil' do
-    subject.entity = nil
-    expect(subject.entity).to be_kind_of Hash
+    it { expect(subject.collection?).to be_false }
+    it { expect(subject.single?).to be_true }
   end
 
-  it 'sets mode to :edit for Object' do
-    subject.entity = Object.new
-    expect(subject.entity).to be_kind_of Hash
+  describe 'instance methods' do
+    subject { context_class.new }
+
+    it 'sets empty emtity for nil values' do
+      subject.entity = nil
+      expect(subject.values).to be_kind_of Hash
+    end
+
+    it 'sets entity Object' do
+      subject.entity = Object.new
+      expect(subject.values).to be_kind_of Hash
+    end
   end
 end

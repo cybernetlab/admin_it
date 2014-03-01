@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 describe AdminIt::ObjectData::Context do
-  let(:object_class) do
-    Class.new do
+  before do
+    object_class.class_eval do
       def r; 'r_value'; end
       def rw; @rw_value ||= 'rw_value'; end
       def rw=(value); @rw_value = value; end
@@ -14,19 +14,14 @@ describe AdminIt::ObjectData::Context do
     end
   end
 
-  let(:object) { object_class.new }
-
-  let(:context) { AdminIt::Context.create_class(object_class) }
-
   it 'retrieves all fields for ancestors' do
-    fields = context.all_fields
+    fields = object_context.fields(scope: :all)
     expect(fields.size).to eq 3
   end
 
   it 'reads fields' do
-    c = AdminIt::SingleContext.create_class(object_class).new
-    c.entity = object
-    expect(c.entity).to eq r: 'r_value', rw: 'rw_value'
+    single_object_context.entity = object
+    expect(single_object_context.values).to eq r: 'r_value', rw: 'rw_value'
   end
 end
 

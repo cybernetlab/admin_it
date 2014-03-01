@@ -18,8 +18,8 @@ module AdminIt
             AdminIt::Field.new(
               m,
               entity_class,
-              read: true,
-              write: setters.include?("#{m}=".to_sym)
+              readable: true,
+              writable: setters.include?("#{m}=".to_sym)
             ).extend(Field)
           end
           setters.reject! { |m| getters.include?(m.to_s[0..-2].to_sym) }
@@ -28,8 +28,8 @@ module AdminIt
             AdminIt::Field.new(
               name,
               entity_class,
-              read: false,
-              write: true
+              readable: false,
+              writable: true
             ).extend(Field)
           end)
         end

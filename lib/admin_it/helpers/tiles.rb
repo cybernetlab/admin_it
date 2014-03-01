@@ -5,9 +5,9 @@ module AdminIt
       default_tag 'h4'
 
       before_capture do
-        field = @template.admin_context.class.field(@template.admin_context.header)
+        field = @template.context.field(@template.context.header)
         unless field.nil?
-          field.render(@template.admin_context.entity, self)
+          field.render(@template.context.entity, self)
         end
       end
     end

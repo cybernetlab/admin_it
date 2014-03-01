@@ -4,77 +4,74 @@ module AdminIt
     @entity_saver = nil
     @entity_destroyer = nil
 
-    def self.copy
-      proc do |source|
-        if source <= SingleContext
-          @entity_getter = source.entity_getter
-          @entity_saver = source.entity_saver
-          @entity_destroyer = source.entity_destroyer
+    class << self
+      attr_reader :entity_getter, :entity_saver, :entity_destroyer
+
+      def copy
+        proc do |source|
+          if source <= SingleContext
+            @entity_getter = source.entity_getter
+            @entity_saver = source.entity_saver
+            @entity_destroyer = source.entity_destroyer
+          end
         end
       end
-    end
 
-    def self.entity(&block)
-      return unless block_given?
-      @entity_getter = block
-    end
+      def entity(&block)
+        return unless block_given?
+        @entity_getter = block
+      end
 
-    def self.save(&block)
-      return unless block_given?
-      @entity_saver = block
-    end
+      def save(&block)
+        return unless block_given?
+        @entity_saver = block
+      end
 
-    def self.destroy(&block)
-      return unless block_given?
-      @entity_destroyer = block
-    end
+      def destroy(&block)
+        return unless block_given?
+        @entity_destroyer = block
+      end
 
-    def self.section(title, *args)
-      @sections ||= []
-      @sections << [title].concat(args.select { |a| !find_field(a).nil? })
-    end
+      def section(title, *args)
+        @sections ||= []
+        @sections << [title].concat(args.select { |a| !find_field(a).nil? })
+      end
 
-    def self.single?
-      true
-    end
+      def single?
+        true
+      end
 
-    def self.entity_getter
-      @entity_getter
-    end
+      def path(entity)
+        AdminIt::Engine.routes.url_helpers.send(
+          "#{resource.name}_path",
+          entity
+        )
+      end
 
-    def self.entity_saver
-      @entity_saver
-    end
+      protected
 
-    def self.entity_destroyer
-      @entity_destroyer
-    end
-
-    def self.load_context(context, controller)
-      context.entity =
-        if context.entity_getter.nil?
-          getter = "#{context.resource.name}_#{context.name}_entity".to_sym
-          if controller.respond_to?(getter)
-            controller.send(getter)
-          else
-            getter = "#{context.name}_entity"
+      def load_context(context, controller)
+        context.entity =
+          if context.entity_getter.nil?
+            getter = "#{context.resource.name}_#{context.name}_entity".to_sym
             if controller.respond_to?(getter)
-              controller.send(getter, context.entity_class)
+              controller.send(getter)
             else
-              context.class.load_entity(controller)
+              getter = "#{context.name}_entity"
+              if controller.respond_to?(getter)
+                controller.send(getter, context.entity_class)
+              else
+                context.class.load_entity(controller)
+              end
             end
+          else
+            context.entity_getter.call(controller.params)
           end
-        else
-          context.entity_getter.call(controller.params)
-        end
-    end
+      end
 
-    def self.load_entity(controller)
-      []
-    end
-
-    def self.path(*args)
-      AdminIt::Engine.routes.url_helpers.send("#{resource.name}_path", *args)
+      def load_entity(controller)
+        []
+      end
     end
 
     class_attr_reader :entity_getter, :entity_saver, :entity_destroyer
@@ -84,10 +81,19 @@ module AdminIt
       return {} if @entity.nil?
       Hash[fields(scope: :readable).map { |f| [f.name, f.read(@entity)] }]
     end
+
+    def path(entity)
+      self.class.path(entity)
+    end
   end
 
   class SavableSingleContext < SingleContext
-    def self.save_entity(entity, controller)
+    class << self
+      def save_action; end
+
+      protected
+
+      def save_entity(entity, controller); end
     end
 
     def save_entity(controller)
@@ -103,18 +109,39 @@ module AdminIt
         entity_saver.call(controller, name)
       end
     end
+
+    class_attr_reader :save_action
   end
 
   class EditContext < SavableSingleContext
-    def self.path(*args)
-      AdminIt::Engine.routes.url_helpers.send(
-        "edit_#{resource.name}_path", *args
-      )
+    class << self
+      def path(entity)
+        AdminIt::Engine.routes.url_helpers.send(
+          "edit_#{resource.name}_path", entity
+        )
+      end
+
+      def save_action
+        :update
+      end
+
+      protected
+
+      def default_icon
+        'pencil'
+      end
     end
   end
 
   class ShowContext < SingleContext
-    def self.destroy_entity(entity, controller)
+    class << self
+      protected
+
+      def destroy_entity(entity, controller); end
+
+      def default_icon
+        'info-circle'
+      end
     end
 
     def destroy_entity(controller)
@@ -133,10 +160,14 @@ module AdminIt
   end
 
   class NewContext < SavableSingleContext
-    def self.path(*args)
-      AdminIt::Engine.routes.url_helpers.send(
-        "new_#{resource.name}_path", *args
-      )
+    class << self
+      def path
+        AdminIt::Engine.routes.url_helpers.send("new_#{resource.name}_path")
+      end
+
+      def save_action
+        :create
+      end
     end
   end
 end

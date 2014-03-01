@@ -1,5 +1,3 @@
-# coding: utf-8
-
 module AdminIt
   module ActiveRecordData
     module Resource
@@ -28,7 +26,7 @@ module AdminIt
             opts = { type: c.type }
             if name == 'id'
               opts[:visible] = false
-              opts[:write] = false
+              opts[:writable] = false
             end
             AdminIt::Field
               .new(name, entity_class, opts)
@@ -90,19 +88,13 @@ module AdminIt
 
       module ClassMethods
         def save_entity(entity, controller)
-          action = case context_name
-          when :create then :new
-          when :edit then :update
-          else :update
-          end
-
           if AdminIt::Env.pundit?
-            controller.authorize(entity, "#{action}?")
+            controller.authorize(entity, "#{save_action}?")
           end
 
           params = controller.params[resource.name]
 
-          fields.each do |field|
+          fields(scope: :writable).each do |field|
             next unless params.key?(field.name)
             next unless field.writable?
             next if field.type == :relation
@@ -110,7 +102,7 @@ module AdminIt
           end
 
           if entity.save
-            controller.redirect_to resource[resource.default_context].path
+            controller.redirect_to_default
           end
         end
       end
@@ -144,7 +136,7 @@ module AdminIt
           end
 
           if entity.destroy
-            controller.redirect_to resource[resource.default_context].path
+            controller.redirect_to_default
           end
         end
       end

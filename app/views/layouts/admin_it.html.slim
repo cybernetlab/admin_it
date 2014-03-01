@@ -19,9 +19,9 @@ html
   body style="padding-top: 70px"
     nav class="navbar navbar-fixed-top navbar-inverse" role="navigation"
       div class="container"
-        = admin_top_menu class: 'navbar-nav'
+        = top_menu class: 'navbar-nav'
 
     div class="container"
-      = render File.join %w(admin_it shared toolbar)
+      = render File.join(%w(admin_it shared toolbar))
 
       = yield

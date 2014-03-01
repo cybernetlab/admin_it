@@ -2,48 +2,51 @@ module AdminIt
   class CollectionContext < Context
     @entities_getter = nil
 
-    def self.copy
-      proc do |source|
-        if source <= CollectionContext
-          @entities_getter = source.entities_getter
+    class << self
+      attr_reader :entities_getter
+
+      def copy
+        proc do |source|
+          if source <= CollectionContext
+            @entities_getter = source.entities_getter
+          end
         end
       end
-    end
 
-    def self.entities(&block)
-      return unless block_given?
-      @entities_getter = block
-    end
+      def entities(&block)
+        return unless block_given?
+        @entities_getter = block
+      end
 
-    def self.collection?
-      true
-    end
+      def collection?
+        true
+      end
 
-    def self.entities_getter
-      @entities_getter
-    end
-
-    def self.load_context(context, controller)
-      context.entities =
-        if context.entities_getter.nil?
-          if controller.respond_to?("#{context.resource.name}_entities")
-            controller.send("#{context.resource.name}_entities", context.name)
-          elsif controller.respond_to?(:entities)
-            controller.entities(entity_class, context.name)
+      def load_context(context, controller)
+        context.entities =
+          if context.entities_getter.nil?
+            if controller.respond_to?("#{context.resource.name}_entities")
+              controller.send(
+                "#{context.resource.name}_entities",
+                context.name
+              )
+            elsif controller.respond_to?(:entities)
+              controller.entities(entity_class, context.name)
+            else
+              context.class.load_entities(controller)
+            end
           else
-            context.class.load_entities(controller)
+            context.entities_getter.call
           end
-        else
-          context.entities_getter.call
-        end
-    end
+      end
 
-    def self.load_entities(controller)
-      []
-    end
+      def load_entities(controller)
+        []
+      end
 
-    def self.path
-      AdminIt::Engine.routes.url_helpers.send("#{resource.plural}_path")
+      def path
+        AdminIt::Engine.routes.url_helpers.send("#{resource.plural}_path")
+      end
     end
 
     attr_accessor :entity
@@ -56,13 +59,10 @@ module AdminIt
     def entities
       self.entity = nil
       collection = self
-      # make only single enumerator
       @enumerator ||= Enumerator.new do |yielder|
         @entities.each do |v|
           collection.entity = v
-          yielder << Hash[self.class.fields.map do |f|
-            [f.name, f.read(v)]
-          end]
+          yielder << v
         end
         collection.entity = nil
       end
@@ -73,18 +73,19 @@ module AdminIt
       # apply filters and limits first
       entities if @enumerator.nil?
       # if @count is not setted yet - calculate it
-      @count =
-        if entities.is_a?(Enumerable) || entities.respond_to?(:count)
-          entities.count
-        elsif entities.respond_to?(:size)
-          entities.size
-        end
+      @count = entities.count
     end
   end
 
   class ListContext < CollectionContext
-    def self.path
-      AdminIt::Engine.routes.url_helpers.send("list_#{resource.plural}_path")
+    class << self
+      def path
+        AdminIt::Engine.routes.url_helpers.send("list_#{resource.plural}_path")
+      end
+
+      def icon
+        'bars'
+      end
     end
   end
 end

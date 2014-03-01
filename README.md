@@ -1,8 +1,22 @@
 # AdminIt
 
+Administrative backend for ruby projects.
+
+# Installation
+
+# Configuration
+
+# Usage
+
 # Todo
 
+## Longtime plans
+
+* Sinatra support
+
 # Changes
+
+## `0.0.1` - first version
 
 # License
 

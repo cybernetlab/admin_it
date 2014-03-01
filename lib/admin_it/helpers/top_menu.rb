@@ -14,7 +14,7 @@ module AdminIt
           action: resource.default_context
         )
         options = { tag: 'li' }
-        options[:class] = 'active' if resource == @template.admin_resource
+        options[:class] = 'active' if resource == @template.resource
         wrap(options)
       end
     end
