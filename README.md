@@ -21,6 +21,10 @@ Administrative backend for ruby projects.
 
 # Changes
 
+## `1.0.1`
+
+* wrap_it link in Gemfile fixed
+
 ## `1.0.0` - pre-release
 
 * active_record support
