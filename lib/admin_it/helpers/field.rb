@@ -14,8 +14,8 @@ module AdminIt
         end
         if field.is_a?(AdminIt::Field)
           entity = context.entity
+          body << html_safe(field.show(entity).to_s) if body.empty?
           field.render(entity, instance: self)
-          body << field.show(entity).to_s if body.empty?
         end
       end
     end

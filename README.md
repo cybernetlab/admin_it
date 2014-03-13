@@ -12,6 +12,7 @@ Administrative backend for ruby projects.
 
 # Todo
 
+* use_fields not working in root resource context
 * Test coverage
 * Entities editing/creating
 
@@ -20,6 +21,11 @@ Administrative backend for ruby projects.
 * Sinatra support
 
 # Changes
+
+## `1.0.2`
+
+* routes moved to config folder
+* fixed issues with pundit and devise
 
 ## `1.0.1`
 

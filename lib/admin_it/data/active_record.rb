@@ -233,7 +233,8 @@ module AdminIt
             if value.count == 0
               I18n.t('admin_it.collection.no_data')
             else
-              context.read(value.first) + ' ...'
+              v = context.read(value.first)
+              v.nil? ? '' : context.read(value.first) + ' ...'
             end
           else
             context.read(value)

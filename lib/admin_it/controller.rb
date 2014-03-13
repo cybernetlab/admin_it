@@ -2,6 +2,8 @@ module AdminIt
   module Controller
     def self.included(base)
       base.class_eval do
+        include Pundit if AdminIt::Env.pundit?
+
         attr_reader :context
         helper_method :context, :resource
         helper AdminIt::Helpers

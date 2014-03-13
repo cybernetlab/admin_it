@@ -1,6 +1,6 @@
 - for_context ||= context
 
-- unless for_context.filters.empty?
+- unless for_context.single? || for_context.filters.empty?
   div class="row admin-it-filters"
     ul class="nav nav-pills nav-stacked col-md-2"
       - for_context.filters.each do |filter, index|
