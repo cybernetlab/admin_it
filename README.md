@@ -6,6 +6,21 @@ Administrative backend for ruby projects.
 
 # Installation
 
+```sh
+gem install admin_it
+```
+
+or if you using `bundler`:
+
+```ruby
+# Gemfile
+gem 'admin_it'
+```
+
+```sh
+bundle install
+```
+
 # Configuration
 
 # Usage
@@ -22,26 +37,30 @@ Administrative backend for ruby projects.
 
 # Changes
 
-## `1.0.3`
+`1.0.4`
+
+* font-awesome fix
+
+`1.0.3`
 
 * assets fix
 
-## `1.0.2`
+`1.0.2`
 
 * routes moved to config folder
 * fixed issues with pundit and devise
 
-## `1.0.1`
+`1.0.1`
 
 * wrap_it link in Gemfile fixed
 
-## `1.0.0` - pre-release
+`1.0.0` - pre-release
 
 * active_record support
 * filters
 * sorting
 
-## `0.0.1` - first version
+`0.0.1` - first version
 
 # License
 

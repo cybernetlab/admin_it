@@ -1,6 +1,3 @@
-# require 'simple-navigation'
-# SimpleNavigation.config_file_paths << File.expand_path(File.join(%w(.. .. config)), __FILE__)
-
 module AdminIt
   class Engine < Rails::Engine
 #    paths['app/controllers'] = File.join('lib', 'admin_it', 'controllers')
