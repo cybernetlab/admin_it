@@ -22,6 +22,10 @@ Administrative backend for ruby projects.
 
 # Changes
 
+## `1.0.3`
+
+* assets fix
+
 ## `1.0.2`
 
 * routes moved to config folder
