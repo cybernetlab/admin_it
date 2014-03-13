@@ -37,6 +37,10 @@ bundle install
 
 # Changes
 
+`1.0.5`
+
+* font-awesome asset path fix
+
 `1.0.4`
 
 * font-awesome fix
