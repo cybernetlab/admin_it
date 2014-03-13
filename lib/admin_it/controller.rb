@@ -25,8 +25,8 @@ module AdminIt
 
     private
 
-    def load_context(_context)
-      @context = _context.load(self)
+    def load_context(context_class)
+      @context = context_class.new(self)
       yield if block_given?
       layout = ['admin_it', params[:layout]].compact.join('_')
       if !performed?

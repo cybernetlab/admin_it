@@ -1,30 +1,24 @@
+require File.join %w(extend_it dsl)
+
 module AdminIt
   class TilesContext < CollectionContext
-    @header = nil
+    class << self
+      dsl_accessor :header do |value|
+        if value.nil?
+          fields.empty? ? nil : fields.first.name
+        else
+          field = fields.find { |f| f.field_name == value }
+          field.nil? ? header(nil) : field.field_name
+        end
+      end
+    end
+
+    def self.path
+      AdminIt::Engine.routes
+        .url_helpers.send("tiles_#{resource.plural}_path")
+    end
 
     class << self
-      def copy
-        proc do |source|
-          if source <= TilesContext
-            @header = source.header
-          end
-        end
-      end
-
-      def header(field_name = nil)
-        if field_name.nil?
-          @header ||= fields.empty? ? nil : fields.first.name
-        else
-          f = find_field(field_name)
-          @header = f.name unless f.nil?
-        end
-      end
-
-      def path
-        AdminIt::Engine.routes
-          .url_helpers.send("tiles_#{resource.plural}_path")
-      end
-
       protected
 
       def default_icon

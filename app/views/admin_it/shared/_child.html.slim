@@ -1,0 +1,15 @@
+- for_context ||= context
+- for_context.toolbar.button( \
+    "#{t('admin_it.action.create')} #{child.resource.display_name}", \
+    icon: 'plus-circle', \
+    link: child.resource[:new].url(child.url_params(layout: :dialog)), \
+    add_class: 'btn-success', \
+    add_data: { tab: '#properties', toggle: 'modal', target: '#child_modal' } \
+  )
+
+= render partial: File.join(%W(admin_it context #{child.name})), \
+         locals: { for_context: child }
+
+div class="modal fade" id="child_modal"
+  div class="modal-dialog"
+    div class="modal-content"

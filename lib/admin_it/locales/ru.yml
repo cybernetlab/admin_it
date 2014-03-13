@@ -2,7 +2,13 @@ ru:
   admin_it:
     collection:
       no_data: 'Нет данных'
-
+    relation:
+      no_resource: 'Не определён ресурс для отображения свойства'
+      no_context: 'Не определён контекст для отображения свойства'
+    section:
+      general: 'Основные свойства'
     action:
       create: 'Создать'
       save: 'Сохранить'
+      close: 'Закрыть'
+    filters: 'Фильтры'

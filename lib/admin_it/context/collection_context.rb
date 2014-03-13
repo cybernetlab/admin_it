@@ -1,56 +1,196 @@
+require 'json'
+require File.join %w(extend_it symbolize)
+
+using ExtendIt::Symbolize
+
 module AdminIt
   class CollectionContext < Context
+    extend FiltersHolder
+
     @entities_getter = nil
 
     class << self
-      attr_reader :entities_getter
+      dsl_block :entities
+      dsl_accessor :default_sorting
+      dsl_use_hash :filters
+    end
 
-      def copy
-        proc do |source|
-          if source <= CollectionContext
-            @entities_getter = source.entities_getter
-          end
-        end
+    def self.before_configure
+      return if resource.nil?
+      visible = fields(scope: :visible).map(&:field_name)
+      @filters = Hash[
+        resource.filters
+          .select { |f| f <= FieldFilter }
+          .select { |f| visible.include?(f.field.field_name) }
+          .map { |f| [f.filter_name, f] }
+      ]
+    end
+
+    def self.filter(name, filter_class: nil, &block)
+      assert_symbol(:name)
+      if @filters.key?(name)
+        filter = @filters[name] = Class.new(@filters[name]) if block_given?
+      else
+        filter_class = Filter if filter_class.nil? || !filter_class <= Filter
+        filter = @filters[name] = filter_class.create(name, self)
       end
+      filter.instance_eval(&block) if block_given?
+    end
 
-      def entities(&block)
-        return unless block_given?
-        @entities_getter = block
-      end
+    def self.entities_getter
+      @entities
+    end
 
-      def collection?
-        true
-      end
+    def self.collection?
+      true
+    end
 
-      def load_context(context, controller)
-        context.entities =
-          if context.entities_getter.nil?
-            if controller.respond_to?("#{context.resource.name}_entities")
-              controller.send(
-                "#{context.resource.name}_entities",
-                context.name
-              )
-            elsif controller.respond_to?(:entities)
-              controller.entities(entity_class, context.name)
-            else
-              context.class.load_entities(controller)
-            end
-          else
-            context.entities_getter.call
-          end
-      end
+    def self.path
+      AdminIt::Engine.routes.url_helpers.send("#{resource.plural}_path")
+    end
 
-      def load_entities(controller)
-        []
-      end
-
-      def path
-        AdminIt::Engine.routes.url_helpers.send("#{resource.plural}_path")
+    def self.sortable_fields(*names)
+      names = names.ensure_symbols
+      fields.each do |_field|
+        _field.sortable = names.include?(_field.field_name)
       end
     end
 
     attr_accessor :entity
     class_attr_reader :entities_getter, :path
+
+    before_load do |store: {}, params: {}|
+      self.sorting = store[:sorting] || self.class.default_sorting
+      self.sorting = params[:sorting] if params.key?(:sorting)
+      self.filters = store[:filters] || []
+      self.filters = params[:filters] if params.key?(:filters)
+    end
+
+    after_load do |store: {}, params: {}|
+      self.active_filter = params[:active_filter] || store[:active_filter]
+    end
+
+    before_save do |params: {}|
+      params.merge!(sorting: sorting.join(';'))
+      params.merge!(filters: filters.map { |f| f.dump }.join(';'))
+      unless active_filter.nil?
+        params.merge!(active_filter: active_filter.name.to_s)
+      end
+    end
+
+    def sorting
+      return @sorting unless @sorting.nil?
+      self.sorting = self.class.default_sorting
+    end
+
+    def sorting=(value)
+      value = value.to_s if value.is_a?(Symbol)
+      if value.is_a?(Array)
+        @sorting = value
+      elsif value.is_a?(String) && !value.empty?
+        @sorting = [] unless /\W[+\-]\w/ =~ value
+        @sorting ||= []
+        sortable = self.class.fields(scope: :sortable).map(&:field_name)
+        value.split(/[;,|]/).each do |sort|
+          sort.strip!
+          if sort[0] == '-'
+            sort = sort[1..-1] + ':'
+            @sorting.delete_if { |s| s.index(sort) == 0 }
+          else
+            sort = sort[1..-1] if sort[0] == '+'
+            sort, order = sort.split(':')
+            order = 'asc' if order != 'desc'
+            sort = sort.to_sym
+            @sorting << "#{sort}:#{order}" if sortable.include?(sort)
+          end
+        end
+      else
+        @sorting = []
+      end
+    end
+
+    def all_filters
+      self.class.filters
+    end
+
+    def filters
+      (@filters ||= {}).values
+    end
+
+    def filters=(value)
+      if value.is_a?(Array)
+        @filters = Hash[
+          value.select { |f| f.is_a?(Filter) }.map { |f| [f.name, f] }
+        ]
+      elsif value.is_a?(Hash)
+        self.filters = value.values
+      elsif value.is_a?(String)
+        @filters ||= {}
+        value.strip!
+        @filters = {} if value.empty?
+        value.split(/[;|]/).each do |str|
+          str.strip!
+          remove = str[0] == '-'
+          str = str[1..-1] if remove
+          m = Filter::REGEXP.match(str)
+          next if m.nil?
+          if remove
+            @filters.delete(m[:name].to_sym)
+          else
+            name = m[:name].to_sym
+            if @filters.key?(name)
+              @filters[name].change(m[:params])
+            else
+              @filters[name] = Filter.load(str, self.class.filters)
+            end
+          end
+        end
+      else
+        @filters = {}
+      end
+    end
+
+    def active_filter
+      @active_filter ||= filters.empty? ? nil : filters.first
+    end
+
+    def active_filter=(value)
+      if value.nil?
+        active_filter
+      elsif value.is_a?(Class) && value <= Filter
+        @active_filter = value
+      elsif value.is_a?(String)
+        value = value.to_sym
+        @active_filter = filters.find { |f| f.name == value }
+      end
+    end
+
+    def sortable_fields
+      @sortable_fields ||= fields(scope: :sortable)
+    end
+
+    def sortable
+      @sortable ||= sortable_fields.map(&:name)
+    end
+
+    def load_context
+      collection =
+        if entities_getter.nil?
+          if controller.respond_to?("#{resource.name}_entities")
+            controller.send("#{resource.name}_entities", name)
+          elsif controller.respond_to?(:entities)
+            controller.entities(entity_class, name)
+          else
+            load_entities
+          end
+        else
+          entities_getter.call
+        end
+      filters.each do |filter|
+        collection = filter.apply(collection)
+      end
+      self.entities = collection
+    end
 
     def entities=(value)
       @entities = value
@@ -75,15 +215,23 @@ module AdminIt
       # if @count is not setted yet - calculate it
       @count = entities.count
     end
+
+    protected
+
+    def load_entities
+      []
+    end
   end
 
   class ListContext < CollectionContext
-    class << self
-      def path
-        AdminIt::Engine.routes.url_helpers.send("list_#{resource.plural}_path")
-      end
+    def self.path
+      AdminIt::Engine.routes.url_helpers.send("list_#{resource.plural}_path")
+    end
 
-      def icon
+    class << self
+      protected
+
+      def default_icon
         'bars'
       end
     end

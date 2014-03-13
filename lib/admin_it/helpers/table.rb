@@ -8,9 +8,9 @@ module AdminIt
 
       before_capture do
         unless column.nil?
-          col = @template.context.class.field(column)
+          col = parent.parent.context.field(column)
           unless col.nil?
-            col.render(@template.context.entity, self)
+            col.render(parent.parent.context.entity, instance: self)
           end
         end
       end
@@ -20,10 +20,10 @@ module AdminIt
       default_tag 'td'
 
       before_capture do
-        single = @template.resource.singles.select { |c| !(c <= NewContext) }
+        single = parent.parent.resource.singles.select { |c| !(c <= NewContext) }
         buttons = single.map do |context|
             cl = context <= ShowContext ? 'info' : 'default'
-            href = context.path(@template.context.entity)
+            href = context.path(parent.parent.context.entity)
             "<a class=\"btn btn-xs btn-#{cl}\" href=\"#{href}\">" \
             "<i class=\"fa fa-#{context.icon}\"></i></a>"
           end
@@ -31,7 +31,7 @@ module AdminIt
         unless show.nil?
           buttons << @template.link_to(
             html_safe('<i class="fa fa-trash-o"></i>'),
-            show.path(@template.context.entity),
+            show.path(parent.parent.context.entity),
             method: :delete,
             class: 'btn btn-xs btn-danger'
           )
@@ -55,9 +55,9 @@ module AdminIt
       child :actions, ActionsCell
 
       before_capture do
-        block = @template.context.class.row
+        block = parent.context.class.row
         unless block.nil?
-          instance_exec(@template.context.entity, &block)
+          instance_exec(parent.context.entity, &block)
         end
       end
     end
@@ -65,9 +65,15 @@ module AdminIt
     class Table < WrapIt::Container
       default_tag 'table'
       html_class %w(table)
+      attr_writer :context
+      argument :context, if: AdminIt::Context
 
       def context
-        @template.context
+        @context ||= @template.context
+      end
+
+      def resource
+        context.resource
       end
 
       child :header, Header

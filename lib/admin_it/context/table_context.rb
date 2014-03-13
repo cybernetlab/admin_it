@@ -1,37 +1,15 @@
+require File.join %w(extend_it dsl)
+
 module AdminIt
   class TableContext < CollectionContext
-    @row_block = nil
-
     class << self
-      def copy
-        proc do |source|
-          if source <= TableContext
-            @row_block = source.row
-            @page_size = source.page_size
-          end
-        end
+      dsl_accessor :page_size, default: 10 do |value|
+        value.is_a?(Fixnum) && value > 0 ? value : 10
       end
 
-      def row(&block)
-        block.nil? ? @row_block : @row_block = block
-      end
+      dsl_boolean :actions
 
-      def page_size(value = nil)
-        value.nil? ? @page_size ||= 10 : @page_size = value
-      end
-
-      def actions(value)
-        @actions = value == true
-      end
-
-      def actions?
-        @actions.nil? ? @actions = true : @actions == true
-      end
-
-      def path
-        AdminIt::Engine.routes
-          .url_helpers.send("table_#{resource.plural}_path")
-      end
+      dsl_block :row
 
       protected
 
@@ -40,18 +18,19 @@ module AdminIt
       end
     end
 
-    class_attr_reader :page_size, :actions?
-
-    def load(params)
-      self.page = params[:page]
+    def self.path
+      AdminIt::Engine.routes
+        .url_helpers.send("table_#{resource.plural}_path")
     end
 
-    def save(params = {})
-      return unless params.is_a?(Hash)
-      params.merge!(
-        page: page
-      )
-      super(params)
+    class_attr_reader :page_size, :actions?
+
+    after_load do |store: {}, params: {}|
+      self.page = params[:page] || store[:page]
+    end
+
+    before_save do |params: {}|
+      params.merge!(page: page)
     end
 
     def pages
@@ -81,7 +60,7 @@ module AdminIt
     end
 
     def headers
-      Hash[self.class.fields.map { |f| [f.name, f.display_name] }]
+      Hash[fields.map { |f| [f.name, f.display_name] }]
     end
   end
 end

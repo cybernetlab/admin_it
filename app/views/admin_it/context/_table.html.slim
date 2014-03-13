@@ -1,0 +1,38 @@
+- for_context ||= context
+
+= render partial: File.join(%w(admin_it shared pagination)), \
+         locals: { for_context: for_context }
+
+- if for_context.count == 0
+  h2: small = t 'admin_it.collection.no_data'
+- else
+  = table for_context, class: 'table-bordered table-condensed' do |_table|
+    = _table.header do |header|
+      - for_context.headers.each do |k, h|
+        - opts = { :'data-toggle' => 'popup' }
+        - opts[:class] = 'text-info' if for_context.sorting.any? { |s| s.index("#{k}:") == 0 }
+        = header.cell opts do
+          = h
+          - v_filter = for_context.filters.select do |f|
+            - f.is_a?(AdminIt::ValueFilter) && f.class.field == for_context.field(k)
+          - if for_context.sortable.include?(k) || !v_filter.nil?
+            div class="btn-group btn-group-xs pull-right fade" data-toggle="popup-target"
+              - unless for_context.sorting.include?("#{k}:asc")
+                a class="btn btn-default" href==url_for(for_context.url_params(sorting: "#{k}:asc"))
+                  i class="fa fa-caret-down"
+              - unless for_context.sorting.include?("#{k}:desc")
+                a class="btn btn-default" href==url_for(for_context.url_params(sorting: "#{k}:desc"))
+                  i class="fa fa-caret-up"
+              - unless v_filter.nil?
+                a class="btn btn-info" href="#"
+                  i class="fa fa-filter"
+      - if for_context.actions?
+        th style='border: none'
+    - for_context.entities.each do |entity|
+      = _table.row do |row|
+        - for_context.fields.each { |f| row.cell f.show(entity).to_s, column: f.name }
+        - if for_context.actions?
+          = row.actions style: 'width: 80px; border: none', class: 'text-right'
+
+= render partial: File.join(%w(admin_it shared pagination)), \
+         locals: { for_context: for_context }

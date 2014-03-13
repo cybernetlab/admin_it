@@ -2,6 +2,8 @@
 
 Administrative backend for ruby projects.
 
+[Russian version of this document](README_RU.md)
+
 # Installation
 
 # Configuration
@@ -10,11 +12,20 @@ Administrative backend for ruby projects.
 
 # Todo
 
+* Test coverage
+* Entities editing/creating
+
 ## Longtime plans
 
 * Sinatra support
 
 # Changes
+
+## `1.0.0` - pre-release
+
+* active_record support
+* filters
+* sorting
 
 ## `0.0.1` - first version
 

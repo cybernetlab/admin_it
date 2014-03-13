@@ -1,0 +1,25 @@
+.admin-it-filters {
+  margin-right: 5px;
+}
+
+.admin-it-filter-content {
+  height: 150px;
+  overflow-y: scroll;
+  line-height: 2em;
+}
+
+.admin-it-filter-content.well {
+  padding: 5px;
+}
+
+.admin-it-filter-content .tab-pane {
+  margin-top: 0px;
+}
+
+.admin-it-filter-content a {
+  padding-top: 0.4em;
+}
+
+.tab-pane {
+  margin-top: 10px;
+}

@@ -1,109 +1,153 @@
+require File.join %w(extend_it dsl)
+require File.join %w(extend_it symbolize)
+
+using ExtendIt::Symbolize
+
 module AdminIt
+  class Section
+    extend ExtendIt::Dsl
+    include Renderable
+    dsl_accessor :name, :display_name
+    dsl_boolean :visible
+    # dsl_block :render_context
+    def fields(*names)
+      names.empty? ? @fields ||= [] : @fields = names
+    end
+  end
+
+  module Identifiable
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
+    def identity; end
+
+    protected
+
+    def context_param
+      identity.nil? ? super : "#{super}(#{identity})"
+    end
+
+    module ClassMethods
+    end
+  end
+
   class SingleContext < Context
-    @entity_getter = nil
-    @entity_saver = nil
-    @entity_destroyer = nil
-
     class << self
-      attr_reader :entity_getter, :entity_saver, :entity_destroyer
+      dsl_block :entity_getter, :entity_saver, :entity_destroyer
+    end
 
-      def copy
-        proc do |source|
-          if source <= SingleContext
-            @entity_getter = source.entity_getter
-            @entity_saver = source.entity_saver
-            @entity_destroyer = source.entity_destroyer
+    def self.sections
+      (@sections ||= {}).values
+    end
+
+    def self.section(*names, &block)
+      @sections ||= {}
+      names.ensure_symbols.each do |name|
+        if @sections.key?(name)
+          section = @sections[name]
+        else
+          if @sections.empty?
+            general = Section.new
+            general.name(:general)
+            # TODO: require this and other files after I18n config in engine.rb
+            #general.display_name(I18n.t('admin_it.collection.no_data'))
+            general.display_name('Основные свойства')
+            general.fields(*fields.map(&:field_name))
+            @sections[:general] = general
           end
+          section = Section.new
+          section.name(name)
+          @sections[name] = section
         end
-      end
-
-      def entity(&block)
-        return unless block_given?
-        @entity_getter = block
-      end
-
-      def save(&block)
-        return unless block_given?
-        @entity_saver = block
-      end
-
-      def destroy(&block)
-        return unless block_given?
-        @entity_destroyer = block
-      end
-
-      def section(title, *args)
-        @sections ||= []
-        @sections << [title].concat(args.select { |a| !find_field(a).nil? })
-      end
-
-      def single?
-        true
-      end
-
-      def path(entity)
-        AdminIt::Engine.routes.url_helpers.send(
-          "#{resource.name}_path",
-          entity
-        )
-      end
-
-      protected
-
-      def load_context(context, controller)
-        context.entity =
-          if context.entity_getter.nil?
-            getter = "#{context.resource.name}_#{context.name}_entity".to_sym
-            if controller.respond_to?(getter)
-              controller.send(getter)
-            else
-              getter = "#{context.name}_entity"
-              if controller.respond_to?(getter)
-                controller.send(getter, context.entity_class)
-              else
-                context.class.load_entity(controller)
-              end
-            end
-          else
-            context.entity_getter.call(controller.params)
-          end
-      end
-
-      def load_entity(controller)
-        []
+        section.instance_eval(&block) if block_given?
       end
     end
 
-    class_attr_reader :entity_getter, :entity_saver, :entity_destroyer
+    def self.single?
+      true
+    end
+
+    def self.path(entity)
+      AdminIt::Engine.routes.url_helpers.send(
+        "#{resource.name}_path",
+        entity
+      )
+    end
+
+    class_attr_reader :entity_getter, :entity_saver, :entity_destroyer, :sections
     attr_accessor :entity
+
+    after_load do |store: {}, params: {}|
+      self.section = params[:section] || store[:section]
+    end
+
+    before_save do |params: {}|
+      params.merge!(section: section)
+    end
 
     def values
       return {} if @entity.nil?
       Hash[fields(scope: :readable).map { |f| [f.name, f.read(@entity)] }]
     end
 
-    def path(entity)
-      self.class.path(entity)
+    def path(_entity: nil)
+      _entity ||= entity
+      self.class.path(_entity)
+    end
+
+    def section
+      @section ||= sections.empty? ? :none : :general
+    end
+
+    def section=(value)
+      value = value.downcase.to_sym if value.is_a?(String)
+      return unless value.is_a?(Symbol)
+      if sections.empty?
+        return if section != :none
+      else
+        return unless sections.map(&:name).include?(value)
+      end
+      @section = section
+    end
+
+    protected
+
+    def load_context
+      self.entity =
+        if entity_getter.nil?
+          getter = "#{resource.name}_#{name}_entity".to_sym
+          if controller.respond_to?(getter)
+            controller.send(getter)
+          else
+            getter = "#{name}_entity"
+            if controller.respond_to?(getter)
+              controller.send(getter, entity_class)
+            else
+              load_entity
+            end
+          end
+        else
+          entity_getter.call(controller.params)
+        end
+    end
+
+    def load_entity(identity: nil)
+      []
     end
   end
 
   class SavableSingleContext < SingleContext
-    class << self
-      def save_action; end
+    def self.save_action; end
 
-      protected
-
-      def save_entity(entity, controller); end
-    end
-
-    def save_entity(controller)
+    def save_entity
       if entity_saver.nil?
         if controller.respond_to?("#{resource.name}_save")
           controller.send("#{resource.name}_save", name)
         elsif controller.respond_to?(:save)
           controller.save(entity_class, name)
         else
-          self.class.save_entity(entity, controller)
+          save_entity
         end
       else
         entity_saver.call(controller, name)
@@ -111,20 +155,30 @@ module AdminIt
     end
 
     class_attr_reader :save_action
+
+    protected
+
+    def save_entity; end
   end
 
   class EditContext < SavableSingleContext
+    include Identifiable
+
+    def self.path(entity)
+      AdminIt::Engine.routes.url_helpers.send(
+        "edit_#{resource.name}_path", entity
+      )
+    end
+
+    def self.save_action
+      :update
+    end
+
+    def self.entity_path?
+      true
+    end
+
     class << self
-      def path(entity)
-        AdminIt::Engine.routes.url_helpers.send(
-          "edit_#{resource.name}_path", entity
-        )
-      end
-
-      def save_action
-        :update
-      end
-
       protected
 
       def default_icon
@@ -133,41 +187,13 @@ module AdminIt
     end
   end
 
-  class ShowContext < SingleContext
-    class << self
-      protected
-
-      def destroy_entity(entity, controller); end
-
-      def default_icon
-        'info-circle'
-      end
-    end
-
-    def destroy_entity(controller)
-      if entity_destroyer.nil?
-        if controller.respond_to?("#{resource.name}_destroy")
-          controller.send("#{resource.name}_destroy")
-        elsif controller.respond_to?(:destroy_entity)
-          controller.destroy_entity(entity_class)
-        else
-          self.class.destroy_entity(entity, controller)
-        end
-      else
-        entity_destroyer.call(controller)
-      end
-    end
-  end
-
   class NewContext < SavableSingleContext
-    class << self
-      def path
-        AdminIt::Engine.routes.url_helpers.send("new_#{resource.name}_path")
-      end
+    def self.path
+      AdminIt::Engine.routes.url_helpers.send("new_#{resource.name}_path")
+    end
 
-      def save_action
-        :create
-      end
+    def self.save_action
+      :create
     end
   end
 end

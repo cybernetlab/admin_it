@@ -1,3 +1,5 @@
+require File.join %w(extend_it class)
+
 module AdminIt
   module ActiveRecordData
     module Resource
@@ -9,136 +11,173 @@ module AdminIt
           .map { |s| s.mb_chars.capitalize }
           .join(' ')
       end
-    end
 
-    module Context
-      def self.included(base)
-        base.extend(ClassMethods)
-      end
+      protected
 
-      module ClassMethods
-        protected
-
-        def load_fields
-          columns = entity_class.columns_hash
-          assoc = entity_class.reflections
-          columns.map do |name, c|
+      def default_fields(&block)
+        enum = Enumerator.new do |yielder|
+          exclude = []
+          entity_class.reflections.each do |name, a|
+            f = AdminIt::Field.create(name, entity_class, type: :relation)
+            f.assoc = a
+            yielder << f
+            exclude << "#{name}_id" if a.belongs_to?
+          end
+          entity_class.columns_hash.each do |name, c|
+            next if exclude.include?(name)
+            name = name.to_sym
             opts = { type: c.type }
-            if name == 'id'
+            if name == :id
               opts[:visible] = false
               opts[:writable] = false
             end
-            AdminIt::Field
-              .new(name, entity_class, opts)
-              .extend(ObjectData::Field)
-              .extend(Field)
-          end.concat(
-            assoc.map do |name, a|
-              AdminIt::Field
-                .new(name, entity_class, type: :relation)
-                .extend(ObjectData::Field)
-                .extend(Field)
-            end
-          )
+            yielder << AdminIt::Field.create(name, entity_class, opts)
+          end
         end
+        block_given? ? enum.each(&block) : enum
+      end
+
+      def default_filters
+        enum = Enumerator.new do |yielder|
+          fields.each do |field|
+            next if field.type == :relation
+            name = "#{field.field_name}_value"
+            yielder << AdminIt::ValueFilter.create(name, self, field)
+          end
+        end
+        block_given? ? enum.each(&block) : enum
       end
     end
 
     module CollectionContext
-      def self.included(base)
-        base.extend(ClassMethods)
-      end
-
       def entities=(value)
         super(value)
         @count = value.count
       end
 
-      module ClassMethods
-        def load_entities(controller)
+      protected
+
+      def load_entities
+        collection =
           if AdminIt::Env.pundit?
             controller.policy_scope(entity_class)
           else
             entity_class.all
           end
+        if child?
+          collection = collection.where(parent.resource.name => parent.entity)
         end
+        sort = {}
+        sorting.each do |_sort|
+          name, order = _sort.split(':')
+          sort[name.to_sym] = order.to_sym
+        end
+        collection = collection.order(sort) unless sort.empty?
+        collection
       end
     end
 
     module SingleContext
-      def self.included(base)
-        base.extend(ClassMethods)
-      end
+      protected
 
-      module ClassMethods
-        def load_entity(controller)
-          entity = entity_class.find(controller.params[:id])
-          if AdminIt::Env.pundit?
-            controller.authorize(entity, "#{context_name}?")
-          end
-          entity
+      def load_entity(identity: nil)
+        identity ||= controller.params[:id]
+        entity = entity_class.find(identity)
+        if AdminIt::Env.pundit?
+          controller.authorize(entity, "#{name}?")
         end
+        if child?
+          fields
+            .select { |f| f.type == :relation &&
+                          f.assoc.klass == parent.entity_class }
+            .each do |f|
+              if f.assoc.collection?
+                entity.send(f.name) << parent.entity
+              else
+                entity.send("#{f.name}=", parent.entity)
+              end
+            end
+        end
+        entity
       end
     end
 
     module SavableSingleContext
-      def self.included(base)
-        base.extend(ClassMethods)
+      protected
+
+      def save_entity
+        if AdminIt::Env.pundit?
+          controller.authorize(entity, "#{self.class.save_action}?")
+        end
+        params = controller.params[resource.name]
+        fields(scope: :writable).each do |field|
+          next unless params.key?(field.name)
+          next unless field.writable?
+          next if field.type == :relation
+          field.write(entity, params[field.name])
+        end
+        if entity.save
+          controller.redirect_to_default
+        end
       end
 
-      module ClassMethods
-        def save_entity(entity, controller)
-          if AdminIt::Env.pundit?
-            controller.authorize(entity, "#{save_action}?")
-          end
-
-          params = controller.params[resource.name]
-
-          fields(scope: :writable).each do |field|
-            next unless params.key?(field.name)
-            next unless field.writable?
-            next if field.type == :relation
-            field.write(entity, params[field.name])
-          end
-
-          if entity.save
-            controller.redirect_to_default
-          end
-        end
+      def add_child_context(for_resource, context_class: :table)
+        child_resource = AdminIt.resources[for_resource]
+        return nil if child_resource.nil?
+        child_resource[context_class].new(self)
       end
     end
 
     module NewContext
       def self.included(base)
-        base.extend(ClassMethods)
+        base.after_initialize do
+          if child?
+            fields
+              .select { |f| f.type == :relation &&
+                            f.assoc.klass == parent.entity_class }
+              .each do |f|
+                if f.assoc.collection?
+                  entity.send(f.name) << parent.entity
+                else
+                  entity.send("#{f.name}=", parent.entity)
+                end
+                f.visible = false
+              end
+          end
+        end
       end
 
-      module ClassMethods
-        def load_entity(controller)
-          entity = entity_class.new
-          if AdminIt::Env.pundit?
-            controller.authorize(entity, "#{context_name}?")
-          end
-          entity
+      protected
+
+      def load_entity(identity: nil)
+        entity = entity_class.new
+        if AdminIt::Env.pundit?
+          controller.authorize(entity, "#{name}?")
         end
+        entity
       end
     end
 
     module ShowContext
-      def self.included(base)
-        base.extend(ClassMethods)
+      def identity
+        entity.id
       end
 
-      module ClassMethods
-        def destroy_entity(entity, controller)
-          if AdminIt::Env.pundit?
-            controller.authorize(entity, :destroy?)
-          end
+      protected
 
-          if entity.destroy
-            controller.redirect_to_default
-          end
+      def destroy
+        if AdminIt::Env.pundit?
+          controller.authorize(entity, :destroy?)
         end
+        if entity.destroy
+          controller.redirect_to_default
+        end
+      end
+    end
+
+    module EditContext
+      def identity
+        entity.id
       end
     end
 
@@ -155,18 +194,89 @@ module AdminIt
     end
 
     module Field
-      protected
+      def self.included(base)
+        base.class_eval do
+          class << self
+            attr_accessor :assoc
 
-      def default_display_name
-        entity_class.human_attribute_name(name)
+            protected
+
+            def default_display_name
+              entity_class.human_attribute_name(field_name)
+            end
+          end
+          class_attr_reader :assoc
+        end
       end
 
+      protected
+
       def read_value(entity)
-        entity.send(name)
+        value = entity.send(name)
+        if type == :relation
+          assoc.collection? ? value.map(&:id).to_json : value.id
+        else
+          value
+        end
+      end
+
+      def show_value(entity)
+        value = entity.send(name)
+        if type == :relation
+          resource = AdminIt.resources.values.find do |r|
+            r.entity_class == assoc.klass
+          end
+          return I18n.t('admin_it.relation.no_resource') if resource.nil?
+          context = resource.contexts.find { |c| c <= ShowContext }
+          return I18n.t('admin_it.relation.no_context') if context.nil?
+          if assoc.collection?
+            if value.count == 0
+              I18n.t('admin_it.collection.no_data')
+            else
+              context.read(value.first) + ' ...'
+            end
+          else
+            context.read(value)
+          end
+        else
+          value
+        end
       end
 
       def write_value(entity, value)
         entity.send("#{name}=", value)
+      end
+    end
+
+    module ValueFilter
+      def all_values(collection = nil, &block)
+        enum = Enumerator.new do |yielder|
+          field
+            .entity_class
+            .select(self.class.field.field_name)
+            .group(self.class.field.field_name)
+            .count
+            .each do |v, c|
+              yielder << { value: v, count: c }
+            end
+        end
+        block_given? ? enum.each(&block) : enum
+      end
+
+      def apply(collection)
+        return collection if @values.empty?
+        binding = []
+        conditions = ''
+        if @values.size == 1 && @values[0].nil?
+          conditions = "#{field.field_name} IS NULL"
+        else
+          conditions = "#{field.field_name} IN (?)"
+          binding << @values.select { |v| !v.nil? }
+          if @values.any? { |v| v.nil? }
+            conditions += " OR #{field.field_name} IS NULL"
+          end
+        end
+        collection = collection.where(conditions, *binding)
       end
     end
   end

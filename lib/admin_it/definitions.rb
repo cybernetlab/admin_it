@@ -6,6 +6,15 @@ module AdminIt
     SINGLE = %i(show new edit)
     CONTEXTS = COLLECTIONS + SINGLE
 
+#    extend ExtendIt::ArrayOf
+
+#    array_of Context do
+#      scope(:all) { |_| true }
+#      find_by :name
+#    end
+
+#    dsl_array :context, ArrayOfContext, create_entity: :create_context
+
     def initialize(resource)
       @resource = resource
       @resource.contexts.replace(CONTEXTS.map do |name|
@@ -17,9 +26,7 @@ module AdminIt
     def exclude_context(*args)
       args.flatten.each do |arg|
         arg = Utils.assert_symbol_arg(arg) { next }
-        puts "--- EXCLUDE: #{arg}"
         @resource.contexts.reject! { |c| c.context_name == arg }
-        puts "--> #{@resource.contexts.map(&:context_name)}"
       end
     end
 
@@ -54,6 +61,7 @@ module AdminIt
         @resource.contexts << context
       end
       context.instance_eval(&block) if block_given?
+      context
     end
 
     def all(&block)
@@ -77,18 +85,5 @@ module AdminIt
     def icon(value = nil)
       @resource.instance_variable_set(:@icon, value.to_s)
     end
-  end
-
-  def self.resource(name, entity_class = nil, **opts, &block)
-    _resource = Resource.new(name, entity_class, **opts)
-    definition = ResourceDefinition.new(_resource)
-    definition.instance_eval(&block) if block_given?
-    _resource.define_controller
-    @resources ||= {}
-    @resources[_resource.name] = _resource
-  end
-
-  def self.resources
-    @resources ||= {}
   end
 end

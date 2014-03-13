@@ -2,7 +2,13 @@ en:
   admin_it:
     collection:
       no_data: 'No data'
-
+    relation:
+      no_resource: 'Resource for displaying property is not defined'
+      no_context: 'Context for displaying property is not defined'
+    section:
+      general: 'General properties'
     action:
       create: 'Create'
       save: 'Save'
+      close: 'Close'
+    filters: 'FIlters'

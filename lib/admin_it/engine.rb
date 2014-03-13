@@ -6,11 +6,14 @@ module AdminIt
 #    paths['app/controllers'] = File.join('lib', 'admin_it', 'controllers')
 
     config.to_prepare do
-      Dir[File.join(AdminIt.config.root, '**', '*.rb')].each do |file|
-        require file
-      end
       Rails.application.config.i18n.load_path +=
         Dir[Engine.root.join('lib', 'admin_it', 'locales', '*.yml')]
+
+      unless File.basename($0) == "rake" && ARGV.include?("db:migrate")
+        Dir[File.join(AdminIt.config.root, '**', '*.rb')].each do |file|
+          require file
+        end
+      end
 #      Assets.register(Rails.application.assets)
 
 #      AdminIt.init

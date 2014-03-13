@@ -24,9 +24,11 @@ module AdminIt
       html_class 'nav'
       child :item, TopMenuItem
 
+      after_initialize { self.deffered_render = true }
+
       before_capture do
-        self.deffered_render = true
         AdminIt.resources.each do |name, resource|
+          next unless resource.menu == true
           item(resource: resource)
         end
       end

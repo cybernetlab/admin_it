@@ -7,7 +7,7 @@ module AdminIt
       before_capture do
         field = @template.context.field(@template.context.header)
         unless field.nil?
-          field.render(@template.context.entity, self)
+          field.render(@template.context.entity, instance: self)
         end
       end
     end

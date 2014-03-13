@@ -1,0 +1,40 @@
+- for_context ||= context
+
+- unless for_context.filters.empty?
+  div class="row admin-it-filters"
+    ul class="nav nav-pills nav-stacked col-md-2"
+      - for_context.filters.each do |filter, index|
+        li class="#{filter == for_context.active_filter ? 'active' : ''}" data-toggle="popup"
+          a href="##{filter.name}" data-toggle="pill"
+            = filter.display_name
+            button(
+              class="btn btn-xs btn-danger pull-right fade"
+              data-toggle="popup-target"
+              data-link==url_for(for_context.url_params(filters: "-#{filter.name}"))
+            )
+              i class="fa fa-times-circle"
+
+    div class="well tab-content admin-it-filter-content col-md-10"
+      - for_context.filters.each do |filter|
+        div(
+          class="tab-pane fade#{filter == for_context.active_filter ? ' in active' : ''}"
+          id==filter.name
+        )
+          - filter.all_values.each do |v|
+            - if filter.values.include?(v[:value])
+              - a_class = 'label-success'
+              - href = url_for(for_context.url_params( \
+                filters: "#{filter.name}(-#{filter.value(v[:value])})", \
+                active_filter: filter.name \
+              ))
+            - else
+              - a_class = 'label-info'
+              - href = url_for(for_context.url_params( \
+                filters: "#{filter.name}(+#{filter.value(v[:value])})", \
+                active_filter: filter.name \
+              ))
+            a class="label #{a_class}" href==href
+              = v[:value].to_s + ' '
+              span class="badge"
+                = v[:count].to_s
+            = ' '

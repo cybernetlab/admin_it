@@ -1,14 +1,30 @@
-nav class="navbar"
-  div class="container"
-    - if context.collection?
-      - new_context = resource.contexts.find { |c| c <= AdminIt::NewContext }
-      - unless new_context.nil?
-        a class="btn btn-success" href==new_context.path
-          i class="fa fa-plus"
-          = ' ' + t('admin_it.action.create')
-      - if resource.collections.size > 1
-        div class="btn-group pull-right"
-          - resource.collections.each do |collection|
-            - active = collection.context_name == context.name ? ' active' : ''
-            a class="btn#{active} btn-default" href==collection.path
-              i class="fa fa-#{collection.icon}"
+- for_context ||= context
+
+<!-- toolbar -->
+- if for_context.collection?
+  - new_context = for_context.resource.contexts.find do |c|
+    - c <= AdminIt::NewContext
+  - unless new_context.nil?
+    = for_context.toolbar.button t('admin_it.action.create'), \
+                                 add_class: 'btn-success', \
+                                 link: new_context.path, \
+                                 icon: 'plus'
+  - if resource.collections.size > 1
+    - for_context.toolbar.buttons(class: 'pull-right') do |buttons|
+      - resource.collections.each do |collection|
+        - btn_class = ['btn-default']
+        - btn_class << 'active' if collection.context_name == for_context.name
+        = buttons.button add_class: btn_class, \
+                         link: collection.path, \
+                         icon: collection.icon
+
+  - unless for_context.all_filters.empty?
+    - for_context.toolbar.buttons(class: 'pull-right admin-it-filters') do |buttons|
+      = buttons.button add_class: 'btn-info dropdown-toggle', \
+                       add_data: { toggle: 'dropdown' }, \
+                       link: '#', icon: 'filter' do |button|
+        = t('admin_it.filters') + ' '
+        span class="caret"
+      ul class="dropdown-menu" role="menu"
+        - for_context.all_filters.each do |filter|
+          li: a href==url_for(filters: filter.filter_name) =filter.display_name

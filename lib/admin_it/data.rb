@@ -1,3 +1,4 @@
+require File.join %w(admin_it data data_behavior)
 require File.join %w(admin_it data object)
 require File.join %w(admin_it data hash)
 require File.join %w(admin_it data active_record)

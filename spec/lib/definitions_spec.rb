@@ -43,7 +43,7 @@ describe AdminIt::ResourceDefinition do
 
     it 'copies fields from fake context' do
       subject.field :name
-      expect(subject.single.find_field(:name)).to_not be_nil
+      expect(subject.single.fields[:name]).to_not be_nil
     end
 
     it 'yields block in single instance context' do
@@ -87,38 +87,38 @@ describe AdminIt::ResourceDefinition do
 
       it 'copies fields from single fake context for singles' do
         subject.context(:edit) { field :title }
-        expect(subject.context(:edit).find_field(:title)).to_not be_nil
-        expect(subject.context(:edit).find_field(:name)).to_not be_nil
-        expect(subject.context(:edit).find_field(:amount)).to_not be_nil
-        expect(subject.context(:edit).find_field(:size)).to be_nil
+        expect(subject.context(:edit).fields[:title]).to_not be_nil
+        expect(subject.context(:edit).fields[:name]).to_not be_nil
+        expect(subject.context(:edit).fields[:amount]).to_not be_nil
+        expect(subject.context(:edit).fields[:size]).to be_nil
       end
 
       it 'copies fields from collection fake context for collections' do
         subject.context(:table) { field :rows }
-        expect(subject.context(:table).find_field(:rows)).to_not be_nil
-        expect(subject.context(:table).find_field(:amount)).to be_nil
-        expect(subject.context(:table).find_field(:name)).to_not be_nil
-        expect(subject.context(:table).find_field(:size)).to_not be_nil
+        expect(subject.context(:table).fields[:rows]).to_not be_nil
+        expect(subject.context(:table).fields[:amount]).to be_nil
+        expect(subject.context(:table).fields[:name]).to_not be_nil
+        expect(subject.context(:table).fields[:size]).to_not be_nil
       end
 
       it 'copies fields from single fake context for on-demand singles' do
         subject.context :test, context_class: AdminIt::EditContext do
           field :title
         end
-        expect(subject.context(:test).find_field(:title)).to_not be_nil
-        expect(subject.context(:test).find_field(:name)).to_not be_nil
-        expect(subject.context(:test).find_field(:amount)).to_not be_nil
-        expect(subject.context(:test).find_field(:size)).to be_nil
+        expect(subject.context(:test).fields[:title]).to_not be_nil
+        expect(subject.context(:test).fields[:name]).to_not be_nil
+        expect(subject.context(:test).fields[:amount]).to_not be_nil
+        expect(subject.context(:test).fields[:size]).to be_nil
       end
 
       it 'copies fields from col fake context for on-demand collections' do
         subject.context :test, context_class: AdminIt::TableContext do
           field :rows
         end
-        expect(subject.context(:test).find_field(:rows)).to_not be_nil
-        expect(subject.context(:test).find_field(:name)).to_not be_nil
-        expect(subject.context(:test).find_field(:amount)).to be_nil
-        expect(subject.context(:test).find_field(:size)).to_not be_nil
+        expect(subject.context(:test).fields[:rows]).to_not be_nil
+        expect(subject.context(:test).fields[:name]).to_not be_nil
+        expect(subject.context(:test).fields[:amount]).to be_nil
+        expect(subject.context(:test).fields[:size]).to_not be_nil
       end
     end
   end

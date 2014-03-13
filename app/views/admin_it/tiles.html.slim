@@ -1,19 +1,2 @@
-- context.entities.each do |record|
-  div class="col-md-3"
-    div class="thumbnail admin-tile"
-      - actions = resource.singles.select { |c| !(c <= AdminIt::NewContext) }
-      - if actions.size > 0
-        div class="btn-group-vertical btn-group-sm pull-right admin-tile-actions fade"
-          - actions.each do |_context|
-            a(
-              class="btn #{_context <= AdminIt::ShowContext ? 'btn-info' : 'btn-default'}"
-              href==_context.path(context.entity)
-            )
-              i class="fa fa-#{_context.icon}"
-      = field context.field(context.header), tag: 'h4'
-      - context.fields.each do |f|
-        - next if f.name == context.header
-        - next if f.type == :relation
-        p
-          strong = f.display_name + ': '
-          = field f, tag: 'span'
+- context.begin_render(self)
+= render File.join %w(admin_it context tiles)

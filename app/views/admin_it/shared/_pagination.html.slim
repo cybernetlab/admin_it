@@ -1,7 +1,9 @@
-- if context.pages > 1
+- for_context ||= context
+
+- if for_context.pages > 1
   div class="text-center"
     ul class="pagination"
-      - if context.page == 1
+      - if for_context.page == 1
         li.disabled: a href="#"
           i class="fa fa-angle-double-left"
         li.disabled: a href="#"
@@ -12,22 +14,22 @@
         li: a href="#{url_for(page: 'prev')}"
           i class="fa fa-angle-left"
       - start = 1
-      - if context.pages > 10
-        - start = context.page - 5 if context.page > 5
-        - if context.page > 6
+      - if for_context.pages > 10
+        - start = for_context.page - 5 if for_context.page > 5
+        - if for_context.page > 6
           li.disabled: a href="#" ...
-      - start = context.pages - 10 if start > context.pages - 10
+      - start = for_context.pages - 10 if start > for_context.pages - 10
       - start.upto(start + 10).each do |page|
-        - break if page > context.pages
+        - break if page > for_context.pages
         - next if page < 1
-        - if page == context.page
+        - if page == for_context.page
           li.active: a href="#" = page
         - else
           li: a href="#{url_for(page: page)}" = page
-      - if context.pages > 10 && \
-           context.page < context.pages - 5
+      - if for_context.pages > 10 && \
+           for_context.page < for_context.pages - 5
         li.disabled: a href="#" ...
-      - if context.page == context.pages
+      - if for_context.page == for_context.pages
         li.disabled: a href="#"
           i class="fa fa-angle-right"
         li.disabled: a href="#"
