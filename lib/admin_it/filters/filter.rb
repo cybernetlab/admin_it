@@ -15,9 +15,30 @@ module AdminIt
     include ExtendIt::Callbacks
     extend ExtendIt::Asserts
 
-    REGEXP = /\A(?<name>[a-zA-Z_][a-zA-Z0-9_]*)(?:\((?<params>[^)]*)\))?\z/
+    REGEXP = /
+      (?<=\A|[,;|])\s*
+      (?<full>
+        (?<action>[!+\-])?
+        (?<name>[a-zA-Z_][a-zA-Z0-9_]*)
+        (?:\((?<params>[^)]*)\))?
+      )
+      \s*(?=[,;|]|\z)
+    /x
 
-    define_callbacks :save
+    ARGUMENT_REGEXP = /
+      (?<=\A|[,;|])\s*
+      (?:
+        (?:(?<action>[+\-])|(?:(?<option>[a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*))?
+        (?<token>
+          (?:'(?:[^\\']|\\.)*')|
+          (?:"(?:[^\\"]|\\.)*")|
+          (?:[^,;|\s]+)
+        )
+      )
+      \s*(?=[,;|]|\z)
+    /x
+
+    define_callbacks :initialize, :save, :load
 
     class << self
       extend ExtendIt::Dsl
@@ -49,28 +70,37 @@ module AdminIt
       create_class(name, _resource)
     end
 
-    def self.load(str, filters)
+    def self.load(str, filter_classes)
       m = REGEXP.match(str)
-      return nil if m.nil?
+      return nil if m.nil? || m[:action] == '-'
       name = m[:name].to_sym
-      filter_class = filters.find { |f| f.filter_name == name }
+      filter_class = filter_classes.find { |f| f.filter_name == name }
       return nil if filter_class.nil?
-      opts = {}
-      args = m[:params].nil? ? [] : m[:params].split(',').map do |param|
-        param.strip!
-        arr = param.split(':')
-        if arr.size > 1
-          opts[arr[0].strip.to_sym] = arr[1].strip
-          nil
+      filter = filter_class.new
+      filter.load(m[:params])
+      filter
+    end
+
+    def self.apply(str, filters, filter_classes)
+      list = str.scan(Filter::REGEXP)
+      filters.clear if list.all? { |_, act, _, _| act.nil? || act.empty? }
+      list.each do |full, action, name, params|
+        name = name.to_sym
+        if action == '-'
+          filters.delete(name)
+        elsif action == '!'
+          filters[name].load(params) if filters.key?(name)
         else
-          arr[0]
+          filters[name] = Filter.load(full, filter_classes)
         end
       end
-      args << opts unless opts.empty?
-      filter_class.new(*args.compact)
     end
 
     class_attr_reader :display_name
+
+    def initialize
+      run_callbacks :initialize
+    end
 
     def name
       @name ||= self.class.filter_name
@@ -90,7 +120,13 @@ module AdminIt
       result
     end
 
-    def change(str)
+    def load(str)
+      return if str.nil?
+      args = parse_arguments(str)
+      unless args.empty?
+        opts = args.extract_options!
+        run_callbacks :load, arguments: { arguments: args, options: opts }
+      end
     end
 
     def apply(collection)
@@ -116,6 +152,34 @@ module AdminIt
     DATE_REGEXP = /\A#{DATE}\z/
     TIME_REGEXP = /\A#{TIME}\z/
     DATETIME_REGEXP = /\A#{DATE}(?:\s+|[\/.\-])#{TIME}\z/
+
+    def param_action(str)
+      case str
+      when '+' then :add
+      when '-' then :remove
+      else nil
+      end
+    end
+
+    def parse_arguments(str)
+      opts = {}
+      args = []
+      parent = self.class.parents.find do |p|
+        p.const_defined?(:ARGUMENT_REGEXP)
+      end
+      unless parent.nil?
+        str.scan(parent.const_get(:ARGUMENT_REGEXP)) do |a, o, v|
+          if o.nil? || o.empty?
+            action = param_action(a)
+            action.nil? ? args << v : (opts[action] ||= []) << v
+          else
+            opts[o.to_sym] = v
+          end
+        end
+      end
+      args << opts unless opts.empty?
+      args
+    end
 
     def parse_argument(arg)
       return arg unless arg.is_a?(String)

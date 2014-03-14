@@ -1,4 +1,5 @@
 require 'json'
+require 'csv'
 require File.join %w(extend_it symbolize)
 
 using ExtendIt::Symbolize
@@ -128,23 +129,7 @@ module AdminIt
         @filters ||= {}
         value.strip!
         @filters = {} if value.empty?
-        value.split(/[;|]/).each do |str|
-          str.strip!
-          remove = str[0] == '-'
-          str = str[1..-1] if remove
-          m = Filter::REGEXP.match(str)
-          next if m.nil?
-          if remove
-            @filters.delete(m[:name].to_sym)
-          else
-            name = m[:name].to_sym
-            if @filters.key?(name)
-              @filters[name].change(m[:params])
-            else
-              @filters[name] = Filter.load(str, self.class.filters)
-            end
-          end
-        end
+        Filter.apply(value, @filters, self.class.filters)
       else
         @filters = {}
       end

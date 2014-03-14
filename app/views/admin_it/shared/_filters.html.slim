@@ -24,13 +24,13 @@
             - if filter.values.include?(v[:value])
               - a_class = 'label-success'
               - href = url_for(for_context.url_params( \
-                filters: "#{filter.name}(-#{filter.value(v[:value])})", \
+                filters: "!#{filter.name}(-#{filter.value(v[:value])})", \
                 active_filter: filter.name \
               ))
             - else
               - a_class = 'label-info'
               - href = url_for(for_context.url_params( \
-                filters: "#{filter.name}(+#{filter.value(v[:value])})", \
+                filters: "!#{filter.name}(+#{filter.value(v[:value])})", \
                 active_filter: filter.name \
               ))
             a class="label #{a_class}" href==href

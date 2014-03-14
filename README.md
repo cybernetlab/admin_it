@@ -28,6 +28,7 @@ bundle install
 # Todo
 
 * use_fields not working in root resource context
+* human-readable date and time fields
 * Test coverage
 * Entities editing/creating
 
@@ -36,6 +37,10 @@ bundle install
 * Sinatra support
 
 # Changes
+
+`1.0.6`
+
+* fixed: [#1](/../../issues/1)
 
 `1.0.5`
 
