@@ -105,7 +105,7 @@ module AdminIt
     module SavableSingleContext
       protected
 
-      def save_entity
+      def do_save_entity
         if AdminIt::Env.pundit?
           controller.authorize(entity, "#{self.class.save_action}?")
         end
@@ -165,7 +165,7 @@ module AdminIt
 
       protected
 
-      def destroy
+      def do_destroy_entity
         if AdminIt::Env.pundit?
           controller.authorize(entity, :destroy?)
         end
@@ -214,7 +214,11 @@ module AdminIt
       def read_value(entity)
         value = entity.send(name)
         if type == :relation
-          assoc.collection? ? value.map(&:id).to_json : value.id
+          if assoc.collection?
+            value.nil? || value.empty? ? [] : value.map(&:id).to_json
+          else
+            value.nil? ? nil : value.id
+          end
         else
           value
         end

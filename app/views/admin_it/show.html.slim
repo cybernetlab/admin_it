@@ -1,6 +1,2 @@
 - context.begin_render(self)
-dl class="dl-horizontal"
-  - context.fields.each do |f|
-    - next if f.type == :relation
-    dt = f.display_name
-    = field f.read(context.entity), f, tag: 'dl'
+= render File.join %w(admin_it context show)

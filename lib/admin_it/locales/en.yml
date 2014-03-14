@@ -11,4 +11,11 @@ en:
       create: 'Create'
       save: 'Save'
       close: 'Close'
-    filters: 'FIlters'
+      destroy: 'Delete'
+    filters: 'Filters'
+    details: 'Details'
+    destroying: 'Deletion'
+    confirm:
+      destroy:
+        header: 'You are going to delete following record:'
+        text: 'Please, confirm deletion'

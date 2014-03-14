@@ -147,7 +147,7 @@ module AdminIt
         elsif controller.respond_to?(:save)
           controller.save(entity_class, name)
         else
-          save_entity
+          do_save_entity
         end
       else
         entity_saver.call(controller, name)
@@ -158,7 +158,7 @@ module AdminIt
 
     protected
 
-    def save_entity; end
+    def do_save_entity; end
   end
 
   class EditContext < SavableSingleContext

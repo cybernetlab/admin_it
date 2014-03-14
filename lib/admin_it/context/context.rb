@@ -23,6 +23,7 @@ module AdminIt
         value.nil? ? default_icon : value.to_s
       end
       dsl_use_hash :fields
+      dsl_boolean :confirm_destroy
     end
 
     inherited_class_reader :resource, :entity_class
@@ -35,6 +36,7 @@ module AdminIt
         @resource = _resource
         @context_name = context_name
         @entity_class = @resource.entity_class
+        @confirm_destroy = @resource.confirm_destroy?
 
         import_data_module(base)
 
@@ -91,7 +93,7 @@ module AdminIt
     end
 
     class_attr_reader :collection?, :single?, :entity_class, :resource, :icon,
-                      :entity_path?
+                      :entity_path?, :confirm_destroy?
     attr_reader :top_menu, :toolbar, :parent, :template, :controller
 
     CONTEXT_REGEXP = /\A

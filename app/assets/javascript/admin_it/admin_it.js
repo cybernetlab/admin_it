@@ -70,20 +70,12 @@ var initLinks = function() {
   });
 }
 
-var initFilters = function() {
-  $('[data-filter-values]').each(function(idx, container) {
-    $.each($(container).data().filterValues, function(i, v) {
-      var html = "<a class='label label-success' href='#'>" + v.value + ' ' + "<span class='badge'>" + v.count + "</span></a>";
-      $(container).append(html);
-    });
-  });
-}
-
 $(document).on('ready page:load', function() {
   initPartials();
   initTiles();
   initTabs();
   initPopups();
   initLinks();
-//  initFilters();
+  // allow dialog content reloading
+  $('.modal').on('hidden.bs.modal', function() { $(this).removeData(); })
 });

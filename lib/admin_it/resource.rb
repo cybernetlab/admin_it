@@ -55,6 +55,7 @@ module AdminIt
 
     dsl_accessor :icon
     dsl_use_hash :fields
+    dsl_boolean :confirm_destroy
 
     define_callbacks :initialize
 
@@ -202,7 +203,7 @@ module AdminIt
     end
 
     def define_controller
-      c_name = "#{name.to_s.camelize}Controller" # !POTABLE
+      c_name = "#{name.to_s.camelize}Controller" # !PORTABLE
       resource = self
       c_class = Class.new(AdminIt.config.controller) do
         @resource = resource
@@ -213,14 +214,14 @@ module AdminIt
 
           if _context < SavableSingleContext
             define_method _context.save_action do
-              load_context(_context) { context.save_entity(self) }
+              load_context(_context) { context.save_entity }
             end
           end
         end
 
         if resource.destroyable?
           define_method :destroy do
-            load_context(resource[:show]) { context.destroy_entity(self) }
+            load_context(resource[:show]) { context.destroy_entity }
           end
         end
       end

@@ -38,6 +38,12 @@ bundle install
 
 # Changes
 
+`1.0.7`
+
+* destoy entity fixed
+* delete confirmation added
+* simple record editing and creating fixed
+
 `1.0.6`
 
 * fixed: [#1](/../../issues/1)

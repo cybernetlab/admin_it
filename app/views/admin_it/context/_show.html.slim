@@ -1,0 +1,38 @@
+- for_context ||= context
+
+- content_for :title do
+  - if for_context.confirm?
+    - if for_context.confirm == :destroy
+      span class="text-danger"
+        i class="fa fa-exclamation-triangle"
+        = ' ' + t('admin_it.destroying')
+  - else
+    = t('admin_it.details')
+
+- if for_context.layout.empty?
+  h4 = yield :title
+
+- if for_context.confirm?
+  - if for_context.confirm == :destroy
+    p = t('admin_it.confirm.destroy.header')
+
+dl class="dl-horizontal"
+  - for_context.fields.each do |f|
+    - next if f.type == :relation
+    dt = f.display_name
+    = field f, tag: 'dl'
+div class="clearfix"
+
+- if for_context.confirm?
+  - if for_context.confirm == :destroy
+    p = t('admin_it.confirm.destroy.text')
+
+- content_for :buttons do
+  - if for_context.confirm?
+    - if for_context.confirm == :destroy
+      = link_to( \
+          '<i class="fa fa-trash-o"></i> '.html_safe + t('admin_it.action.destroy'),
+          for_context.path, \
+          method: :delete, \
+          class: 'btn btn-danger' \
+        )

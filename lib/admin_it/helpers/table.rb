@@ -20,25 +20,47 @@ module AdminIt
       default_tag 'td'
 
       before_capture do
-        single = parent.parent.resource.singles.select { |c| !(c <= NewContext) }
-        buttons = single.map do |context|
-            cl = context <= ShowContext ? 'info' : 'default'
-            href = context.path(parent.parent.context.entity)
+        context = parent.parent.context
+        entity = context.entity
+        resource = parent.parent.resource
+        single = resource.singles.select { |c| !(c <= NewContext) }
+        buttons = single.map do |_context|
+            cl = _context <= ShowContext ? 'info' : 'default'
+            href = _context.path(entity)
             "<a class=\"btn btn-xs btn-#{cl}\" href=\"#{href}\">" \
-            "<i class=\"fa fa-#{context.icon}\"></i></a>"
+            "<i class=\"fa fa-#{_context.icon}\"></i></a>"
           end
-        show = single.first { |c| c <= ShowContext }
-        unless show.nil?
-          buttons << @template.link_to(
-            html_safe('<i class="fa fa-trash-o"></i>'),
-            show.path(parent.parent.context.entity),
-            method: :delete,
-            class: 'btn btn-xs btn-danger'
-          )
+        if resource.destroyable?
+          if context.confirm_destroy?
+            confirm = single.find { |c| c.context_name == :confirm } ||
+                      single.first { |c| c <= ShowContext }
+            buttons << if confirm.nil?
+              @template.link_to(
+                html_safe('<i class="fa fa-trash-o"></i>'),
+                show.path(entity),
+                method: :delete,
+                confirm: I18n.t('admin_it.confirm.destroy.text'),
+                class: 'btn btn-xs btn-danger'
+              )
+            else
+              '<a class="btn btn-xs btn-danger" ' +
+              %Q{data-toggle="modal" data-target="#confirm_modal" } +
+              %Q{href="#{confirm.path(entity)}} +
+              '?layout=dialog&confirm=destroy">' +
+              '<i class="fa fa-trash-o"></i></a>'
+            end
+          else
+            buttons << @template.link_to(
+              html_safe('<i class="fa fa-trash-o"></i>'),
+              show.path(entity),
+              method: :delete,
+              class: 'btn btn-xs btn-danger'
+            )
+          end
         end
 
         html = buttons.join
-        html = "<div class=\"btn-group\">#{html}</dic>" if buttons.size > 1
+        html = "<div class=\"btn-group\">#{html}</div>" if buttons.size > 1
 
         self[:content] = html_safe(html)
       end
