@@ -24,17 +24,17 @@ module ContextExampleGroup
       end
 
       let(:object_context_class) do
-        AdminIt::Context.create_class(:object, object_resource)
+        AdminIt::Context.create(:object, object_resource)
       end
       let(:object_context) { object_context_class.new }
 
       let(:single_object_context_class) do
-        AdminIt::SingleContext.create_class(:single, object_resource)
+        AdminIt::SingleContext.create(:single, object_resource)
       end
       let(:single_object_context) { single_object_context_class.new }
 
       let(:collection_object_context_class) do
-        AdminIt::CollectionContext.create_class(:collection, object_resource)
+        AdminIt::CollectionContext.create(:collection, object_resource)
       end
       let(:collection_object_context) { collection_object_context_class.new }
     end

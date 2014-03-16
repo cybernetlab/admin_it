@@ -1,4 +1,4 @@
-require File.join %w(extend_it class)
+require File.join %w(extend_it base)
 require File.join %w(extend_it dsl)
 require File.join %w(extend_it callbacks)
 
@@ -9,40 +9,58 @@ module AdminIt
   # @author [alexiss]
   #
   class Field
-    extend ExtendIt::Class
+    extend ExtendIt::Base
     extend DataBehavior
+    extend ExtendIt::Dsl
+    extend DisplayableName
     include ExtendIt::Callbacks
 
     TYPES = %i(unknown integer float string date relation enum)
 
-    define_callbacks :initialize#, :configure
+    define_callbacks :initialize
 
-    class << self
-      extend ExtendIt::Dsl
+    dsl do
+      dsl_accessor :type, default: TYPES[0]
 
-      # attr_reader :field_name, :entity_class
-
-      dsl_accessor :display_name do |value = nil|
-        value.nil? ? default_display_name : value.to_s
-      end
-
-      dsl_accessor :type, default: TYPES[0] do |value|
-        TYPES.include?(value) ? value : TYPES[0]
-      end
-
-      dsl_accessor :placeholder do |value = nil|
-        value.nil? ? display_name : value
-      end
+      dsl_accessor :placeholder
 
       dsl_boolean :readable, :writable, :visible, :sortable
 
       dsl_block :read, :write, :render, :display
 
+      def hide
+        @visible = false
+      end
+
+      def show
+        @visible = true
+      end
+    end
+
+    class << self
+      attr_reader :type, :read, :write, :render, :display
+
       protected
 
       def default_display_name
-        name.to_s
+        field_name
       end
+    end
+
+    def self.readable?
+      @readable.nil? ? @readable = true : @readable == true
+    end
+
+    def self.writable?
+      @writable.nil? ? @writable = true : @writable == true
+    end
+
+    def self.visible?
+      @visible.nil? ? @visible = true : @visible == true
+    end
+
+    def self.sortable?
+      @sortable.nil? ? @sortable = true : @sortable == true
     end
 
     inherited_class_reader :field_name, :entity_class
@@ -56,16 +74,22 @@ module AdminIt
                    )
       base = self
       Class.new(base) do
-        #run_callbacks :configure do
         @field_name, @entity_class = name, _entity_class
         import_data_module(base)
-        self.readable = readable
-        self.writable = writable
-        self.visible = visible
-        self.sortable = sortable
+        @readable = readable == true
+        @writable = writable == true
+        @visible = visible == true
+        @sortable = sortable == true
         self.type = type
-        #end
       end
+    end
+
+    def self.type=(value)
+      TYPES.include?(value) ? value : TYPES[0]
+    end
+
+    def self.placeholder
+      @placeholder ||= display_name
     end
 
     def self.hide
@@ -169,6 +193,54 @@ module AdminIt
     def write_value(entity, value)
       raise NotImplementedError,
             "Attempt to write to field #{name} with unimplemented writer"
+    end
+  end
+
+  module FieldsHolder
+    extend ExtendIt::DslModule
+
+    dsl do
+      dsl_hash_of_objects :fields, single: :field do |name, **opts|
+        field_class = opts[:class] || opts[:field_class] || Field
+        unless field_class.is_a?(Class) && field_class <= Field
+          fail(
+            ArgumentError,
+            'field class should be AdminIt::Field descendant'
+          )
+        end
+        field_class.create(name, entity_class)
+      end
+
+      def hide_fields(*names)
+        hash = dsl_get(:fields, {})
+        names.ensure_symbols.each do |name|
+          hash[name].hide if hash.key?(name)
+        end
+      end
+
+      def show_fields(*names)
+        hash = dsl_get(:fields, {})
+        names.ensure_symbols.each do |name|
+          hash[name].show if hash.key?(name)
+        end
+      end
+    end
+
+    def fields(scope: :visible)
+      case scope
+      when nil, :all then @fields.values
+      when :visible then @fields.values.select { |f| f.visible? }
+      when :hidden then @fields.values.select { |f| !f.visible? }
+      when :readable then @fields.values.select { |f| f.readable? }
+      when :writable then @fields.values.select { |f| f.writable? }
+      when :sortable then @fields.values.select { |f| f.sortable? }
+      when Field::TYPES then @fields.values.select { |f| f.type == scope }
+      else @fields.values
+      end
+    end
+
+    def field(name)
+      @fields[name.ensure_symbol]
     end
   end
 end

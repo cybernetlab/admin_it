@@ -34,28 +34,24 @@ module AdminIt
           if context.confirm_destroy?
             confirm = single.find { |c| c.context_name == :confirm } ||
                       single.first { |c| c <= ShowContext }
-            buttons << if confirm.nil?
-              @template.link_to(
+            unless confirm.nil?
+              buttons <<
+                '<a class="btn btn-xs btn-danger" ' +
+                %Q{data-toggle="modal" data-target="#confirm_modal" } +
+                %Q{href="#{confirm.path(entity)}} +
+                '?layout=dialog&confirm=destroy">' +
+                '<i class="fa fa-trash-o"></i></a>'
+            end
+          else
+            show = single.first { |c| c <= ShowContext }
+            unless show.nil?
+              buttons << @template.link_to(
                 html_safe('<i class="fa fa-trash-o"></i>'),
                 show.path(entity),
                 method: :delete,
-                confirm: I18n.t('admin_it.confirm.destroy.text'),
                 class: 'btn btn-xs btn-danger'
               )
-            else
-              '<a class="btn btn-xs btn-danger" ' +
-              %Q{data-toggle="modal" data-target="#confirm_modal" } +
-              %Q{href="#{confirm.path(entity)}} +
-              '?layout=dialog&confirm=destroy">' +
-              '<i class="fa fa-trash-o"></i></a>'
             end
-          else
-            buttons << @template.link_to(
-              html_safe('<i class="fa fa-trash-o"></i>'),
-              show.path(entity),
-              method: :delete,
-              class: 'btn btn-xs btn-danger'
-            )
           end
         end
 
@@ -77,7 +73,7 @@ module AdminIt
       child :actions, ActionsCell
 
       before_capture do
-        block = parent.context.class.row
+        block = parent.context.row
         unless block.nil?
           instance_exec(parent.context.entity, &block)
         end

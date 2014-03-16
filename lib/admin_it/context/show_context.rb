@@ -1,12 +1,11 @@
 module AdminIt
   class ShowContext < SingleContext
+    extend Renderable
     include Identifiable
 
     CONFIRMS = %i(destroy update)
 
     class << self
-      include Renderable
-
       protected
 
       def default_icon
@@ -14,15 +13,17 @@ module AdminIt
       end
     end
 
+    dsl do
+      dsl_block :read
+    end
+
     def self.entity_path?
       true
     end
 
-    def self.read(entity = nil, &block)
-      if entity.nil?
-        @reader = block if block_given?
-      elsif !@reader.nil?
-        @reader.call(entity)
+    def self.read(entity)
+      unless @read.nil?
+        @read.call(entity)
       end
     end
 

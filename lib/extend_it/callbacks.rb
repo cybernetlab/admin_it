@@ -1,18 +1,18 @@
-require File.join %w(extend_it symbolize)
-require File.join %w(extend_it class)
-
-using ExtendIt::Symbolize
+require File.join %w(extend_it ensures)
+require File.join %w(extend_it base)
 
 module ExtendIt
   module Callbacks
+    using ExtendIt::Ensures if ExtendIt.config.use_refines?
+
     CALLBACKS = %i(before after around)
 
     def self.included(base)
       unless base.is_a?(Class)
         fail RuntimeError, 'Can be included in classes only'
       end
-      unless (class << base; self end).included_modules.include?(ExtendIt::Class)
-        fail RuntimeError, "#{base.name} should extend ExtendIt::Class"
+      unless (class << base; self end).included_modules.include?(Base)
+        fail RuntimeError, "#{base.name} should extend ExtendIt::Base"
       end
       base.extend(ClassMethods)
     end
@@ -83,7 +83,7 @@ module ExtendIt
         callbacks = [:before, :after] unless callbacks.is_a?(Array)
         callbacks.select! { |cb| CALLBACKS.include?(cb) }
         names.each do |name|
-          name = name.symbolize || next
+          name = name.ensure_symbol || next
           callbacks.each do |cb|
             cb_name = "#{cb}_#{name}".to_sym
             var_name = "@#{cb_name}".to_sym

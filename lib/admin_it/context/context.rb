@@ -1,35 +1,32 @@
 require 'uri'
 require File.join %w(extend_it dsl)
-require File.join %w(extend_it array_of)
-require File.join %w(extend_it symbolize)
+require File.join %w(extend_it base)
+require File.join %w(extend_it callbacks)
 
-using ExtendIt::Symbolize
+using ExtendIt::Ensures
 
 module AdminIt
   class Context
-    extend ExtendIt::Class
+    extend ExtendIt::Base
     extend ExtendIt::Dsl
-    include ExtendIt::Callbacks
-    extend DataBehavior
+    extend Iconed
     extend FieldsHolder
+    extend DataBehavior
+    include ExtendIt::Callbacks
 
     class << self
-      extend ExtendIt::Dsl
-
       attr_reader :context_name
       attr_accessor :controller_class
+    end
 
-      dsl_accessor :icon do |value|
-        value.nil? ? default_icon : value.to_s
-      end
-      dsl_use_hash :fields
+    dsl do
       dsl_boolean :confirm_destroy
     end
 
     inherited_class_reader :resource, :entity_class
     define_callbacks :initialize, :load, :save
 
-    def self.create(context_name, _resource, &block)
+    def self.create(context_name, _resource)
       fail ArgumentError, 'Wrong resource' unless _resource.is_a?(Resource)
       base = self
       Class.new(base) do
@@ -45,21 +42,11 @@ module AdminIt
         ]
 
         before_configure if respond_to?(:before_configure)
-        instance_eval(&block) if block_given?
-        after_configure if respond_to?(:after_configure)
       end
     end
 
-    def self.field(*names, field_class: nil, &block)
-      names.ensure_symbols.each do |name|
-        if @fields.key?(name)
-          field = @fields[name] = Class.new(@fields[name]) if block_given?
-        else
-          field_class = Field if field_class.nil? || !field_class <= Field
-          field = @fields[name] = field_class.create(name, entity_class)
-        end
-        field.instance_eval(&block) if block_given?
-      end
+    def self.confirm_destroy?
+      @confirm_destroy.nil? ? true : @confirm_destroy == true
     end
 
     def self.collection?
@@ -84,15 +71,7 @@ module AdminIt
       url
     end
 
-    class << self
-      protected
-
-      def default_icon
-        ''
-      end
-    end
-
-    class_attr_reader :collection?, :single?, :entity_class, :resource, :icon,
+    class_attr_reader :collection?, :single?, :entity_class, :resource,
                       :entity_path?, :confirm_destroy?
     attr_reader :top_menu, :toolbar, :parent, :template, :controller
 

@@ -38,6 +38,12 @@ bundle install
 
 # Changes
 
+`1.0.8`
+
+* dsl code fully refactored
+* test coverage enlarged
+* added: select specific filters for context
+
 `1.0.7`
 
 * destoy entity fixed

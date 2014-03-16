@@ -1,5 +1,3 @@
-require File.join %w(extend_it class)
-
 module AdminIt
   module ActiveRecordData
     module Resource

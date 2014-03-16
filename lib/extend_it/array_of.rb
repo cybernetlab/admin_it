@@ -1,8 +1,8 @@
 require 'forwardable'
-require File.join %w(extend_it symbolize)
+require File.join %w(extend_it ensures)
 require File.join %w(extend_it asserts)
 
-using ExtendIt::Symbolize
+using ExtendIt::Ensures if ExtendIt.config.use_refines?
 
 module ExtendIt
   module ArrayOf
@@ -38,7 +38,7 @@ module ExtendIt
 
       def scope(*names, &block)
         names.flatten.uniq.each do |name|
-          name = name.symbolize || next
+          name = name.ensure_symbol || next
           @scopes[name] = block.nil? ? proc { |e| e.send(name) } : block
           str = name.to_s
           if str[-1] == '?'

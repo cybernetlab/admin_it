@@ -1,6 +1,13 @@
 require 'rubygems'
 require 'bundler/setup'
 
+# --- ExtendIt
+require 'extend_it'
+if ENV['USE_REFINES']
+  ExtendIt.config.use_refines(true)
+end
+# --- EOF ExtendIt
+
 require 'combustion'
 require 'capybara/rspec'
 

@@ -1,61 +1,51 @@
-require File.join %w(extend_it symbolize)
-require File.join %w(extend_it asserts)
+require File.join %w(extend_it base)
 require File.join %w(extend_it callbacks)
-require File.join %w(extend_it class)
 
-using ExtendIt::Symbolize
+using ExtendIt::Ensures
 
 module AdminIt
-  module FieldsHolder
-    def fields(scope: :visible)
-      case scope
-      when nil, :all then @fields.values
-      when :visible then @fields.values.select { |f| f.visible? }
-      when :hidden then @fields.values.select { |f| !f.visible? }
-      when :readable then @fields.values.select { |f| f.readable? }
-      when :writable then @fields.values.select { |f| f.writable? }
-      when :sortable then @fields.values.select { |f| f.sortable? }
-      when Field::TYPES then @fields.values.select { |f| f.type == scope }
-      else @fields.values
-      end
-    end
-
-    def hide_fields(*names)
-      names.ensure_symbols.each do |name|
-        @fields[name].hide if @fields.key?(name)
-      end
-    end
-
-    def show_fields(*names)
-      names.ensure_symbols.each do |name|
-        @fields[name].show if @fields.key?(name)
-      end
-    end
-  end
-
-  module FiltersHolder
-    def filters(scope: :all)
-      @filters ||= {}
-      case scope
-      when nil, :all then @filters.values
-      else @filters.values
-      end
-    end
-  end
-
   class Resource
-    extend ExtendIt::Class
-    extend ExtendIt::Dsl
-    include ExtendIt::Asserts
+    extend ExtendIt::Base
     include ExtendIt::Callbacks
+    include ExtendIt::Dsl
+    include Iconed
     include FieldsHolder
     include FiltersHolder
 
-    attr_reader :name, :plural, :entity_class, :menu
+    dsl do
+      dsl_hash_of_objects :contexts, single: :context do |name, **opts|
+        context_class = opts[:class] || opts[:context_class] || Context
+        unless context_class.is_a?(Class) && context_class <= Context
+          fail(
+            ArgumentError,
+            'context class should be AdminIt::Context descendant'
+          )
+        end
+        @contexts[name] = context_class.create(name, entity_class)
+      end
 
-    dsl_accessor :icon
-    dsl_use_hash :fields
-    dsl_boolean :confirm_destroy
+      dsl_boolean :confirm_destroy
+      dsl_accessor :display_name
+
+      def collection(&block)
+        return unless block_given?
+        hash = dsl_get(:contexts, {})
+        hash.select { |_, c| c.collection? }.each { |_, c| c.dsl_eval(&block) }
+      end
+
+      def single(&block)
+        return unless block_given?
+        hash = dsl_get(:contexts, {})
+        hash.select { |_, c| c.single? }.each { |_, c| c.dsl_eval(&block) }
+      end
+
+      dsl_accessor :default_context do |value|
+        value = value.ensure_symbol
+        @contexts.key?(value) ? value : nil
+      end
+    end
+
+    attr_reader :name, :plural, :entity_class, :menu
 
     define_callbacks :initialize
 
@@ -66,7 +56,11 @@ module AdminIt
       destroyable: true,
       auto_filters: true
     )
-      assert_symbol(:name)
+      name = name.ensure_symbol || fail(
+        ArgumentError,
+        '`name` argument for resource constructor should be a Symbol ' \
+        'or a String'
+      )
 
       @name, @entity_class = name, entity_class
       if @entity_class.nil?
@@ -98,79 +92,32 @@ module AdminIt
       end
     end
 
-    def field(*names, field_class: nil, &block)
-      names.ensure_symbols.each do |name|
-        if @fields.key?(name)
-          field = @fields[name]
-        else
-          field_class = Field if field_class.nil? || !field_class <= Field
-          field = @fields[name] = field_class.create(name, entity_class)
-        end
-        field.instance_eval(&block) if block_given?
-      end
+    def confirm_destroy?
+      @confirm_destroy.nil? ? @confirm_destroy = true : @confirm_destroy == true
+    end
+
+    def destroyable?
+      @destroyable.nil? ? @destroyable = true : @destroyable == true
     end
 
     def [](name)
-      assert_symbol(:name)
-      @contexts[name]
+      context(name)
     end
 
-    def context(*names, context_class: nil, &block)
-      names.ensure_symbols.each do |name|
-        if @contexts.key?(name)
-          context = @contexts[name]
-        else
-          if context_class.nil? || !context_class <= Context
-            context_class = Context
-          end
-          context = @contexts[name] = context_class.create(name, entity_class)
-        end
-        context.instance_eval(&block) if block_given?
-      end
+    def context(name)
+      @contexts[name.ensure_symbol]
     end
 
     def contexts
       @contexts.values
     end
 
-    dsl_use_hash :contexts
-
-    def filter(name, filter_class: nil, &block)
-      assert_symbol(:name)
-      filter = @filters[name]
-      if filter.nil?
-        filter_class = Filter if filter_class.nil? || !filter_class <= Filter
-        filter = @filters[name] = filter_class.create(name, self)
-      end
-      filter.instance_eval(&block) if block_given?
-    end
-
-    dsl_use_hash :filters
-
-    def collection(&block)
-      return unless block_given?
-      contexts.select { |c| c.collection? }.each do |c|
-        c.instance_eval(&block)
-      end
-    end
-
-    def single(&block)
-      return unless block_given?
-      contexts.select { |c| c.single? }.each do |c|
-        c.instance_eval(&block)
-      end
-    end
-
     def default_context(value = nil)
-      if value.nil?
-        return @default_context unless @default_context.nil?
-        if collections.size > 0
-          @default_context = collections.first.context_name
-        elsif singles.size > 0
-          @default_context = singles.first.context_name
-        end
-      else
-        @default_context = @contexts.keys.include?(value) ? value : default_context
+      return @default_context unless @default_context.nil?
+      if collections.size > 0
+        @default_context = collections.first.context_name
+      elsif singles.size > 0
+        @default_context = singles.first.context_name
       end
     end
 
@@ -179,11 +126,7 @@ module AdminIt
     end
 
     def display_name
-      plural.split('_').map { |s| s.capitalize }.join(' ')
-    end
-
-    def destroyable?
-      @destroyable
+      @display_name ||= plural.split('_').map { |s| s.capitalize }.join(' ')
     end
 
     def collection_path
@@ -280,11 +223,11 @@ module AdminIt
   end
 
   def self.resource(name, entity_class = nil, **opts, &block)
-    _resource = Resource.new(name, entity_class, **opts)
-    _resource.instance_eval(&block) if block_given?
-    _resource.define_controller
+    resource = Resource.new(name, entity_class, **opts)
+    resource.dsl_eval(&block) if block_given?
+    resource.define_controller
     @resources ||= {}
-    @resources[_resource.name] = _resource
+    @resources[resource.name] = resource
   end
 
   def self.resources

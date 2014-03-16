@@ -1,5 +1,9 @@
 module AdminIt
   class FieldFilter < Filter
+    dsl do
+      dsl_accessor :field
+    end
+
     class << self
       attr_reader :field
 

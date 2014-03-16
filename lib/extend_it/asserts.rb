@@ -1,8 +1,10 @@
 require File.join %w(extend_it caller)
-require File.join %w(extend_it symbolize)
+require File.join %w(extend_it ensures)
 
-using ExtendIt::Caller
-using ExtendIt::Symbolize
+if ExtendIt.config.use_refines?
+  using ExtendIt::Caller
+  using ExtendIt::Ensures
+end
 
 module ExtendIt
   module Asserts

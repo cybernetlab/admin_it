@@ -1,19 +1,16 @@
 require 'date'
 require 'json'
-require File.join %w(extend_it class)
+require File.join %w(extend_it base)
 require File.join %w(extend_it dsl)
 require File.join %w(extend_it callbacks)
-require File.join %w(extend_it asserts)
-require File.join %w(extend_it symbolize)
-
-using ExtendIt::Symbolize
 
 module AdminIt
   class Filter
-    extend ExtendIt::Class
+    extend ExtendIt::Base
+    extend ExtendIt::Dsl
     extend DataBehavior
+    extend DisplayableName
     include ExtendIt::Callbacks
-    extend ExtendIt::Asserts
 
     REGEXP = /
       (?<=\A|[,;|])\s*
@@ -41,18 +38,16 @@ module AdminIt
     define_callbacks :initialize, :save, :load
 
     class << self
-      extend ExtendIt::Dsl
-
       attr_reader :filter_name, :resource
-
-      dsl_accessor :display_name do |value = nil|
-        value.nil? ? default_display_name : value.to_s
-      end
 
       protected
 
       def create_class(name, _resource)
-        assert_symbol(:name, binding: binding)
+        name = name.ensure_symbol || fail(
+          ArgumentError,
+          '`name` argument for `Filter::create_class` should be a Symbol' \
+          ' or a String'
+        )
         base = self
         Class.new(base) do
           @filter_name, @resource = name, _resource
@@ -209,6 +204,34 @@ module AdminIt
       when String then "\"#{arg.gsub('"', '\\"')}\""
       else arg.to_s
       end
+    end
+  end
+
+  module FiltersHolder
+    extend ExtendIt::DslModule
+
+    dsl do
+      dsl_hash_of_objects :filters, single: :filter do |name, **opts|
+        filter_class = opts[:class] || opts[:filter_class] || Filter
+        unless filter_class.is_a?(Class) && filter_class <= Filter
+          fail(
+            ArgumentError,
+            'filter class should be AdminIt::Filter descendant'
+          )
+        end
+        filter_class.create(name, entity_class)
+      end
+    end
+
+    def filters(scope: :all)
+      case scope
+      when nil, :all then @filters.values
+      else @filters.values
+      end
+    end
+
+    def filter(name)
+      @filters[name.ensure_symbol]
     end
   end
 end

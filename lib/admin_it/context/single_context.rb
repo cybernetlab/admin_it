@@ -1,17 +1,28 @@
-require File.join %w(extend_it dsl)
-require File.join %w(extend_it symbolize)
-
-using ExtendIt::Symbolize
-
 module AdminIt
   class Section
-    extend ExtendIt::Dsl
+    extend ExtendIt::Base
+    include ExtendIt::Dsl
     include Renderable
-    dsl_accessor :name, :display_name
-    dsl_boolean :visible
-    # dsl_block :render_context
+
+    attr_reader :name, :display_name
+
+    dsl do
+      dsl_accessor :name, :display_name
+      dsl_boolean :visible
+    end
+
+    def visible?
+      @visible.nil? ? @visible = true : @visible == true
+    end
+
     def fields(*names)
       names.empty? ? @fields ||= [] : @fields = names
+    end
+
+    def initialize(name, *fields, display_name: nil)
+      @name = name
+      @display_name = display_name || name
+      @fields = fields
     end
   end
 
@@ -33,35 +44,26 @@ module AdminIt
   end
 
   class SingleContext < Context
-    class << self
+    dsl do
       dsl_block :entity_getter, :entity_saver, :entity_destroyer
+
+      dsl_hash_of_objects :sections, single: :section do |name, **opts|
+        if @sections.empty?
+          # TODO: require this and other files after I18n config in engine.rb
+          #general.display_name(I18n.t('admin_it.collection.no_data'))
+          general = Section.new(
+            :general,
+            *fields.map(&:field_name),
+            display_name: 'Основные свойства'
+          )
+          @sections[:general] = general
+        end
+        Section.new(name)
+      end
     end
 
     def self.sections
       (@sections ||= {}).values
-    end
-
-    def self.section(*names, &block)
-      @sections ||= {}
-      names.ensure_symbols.each do |name|
-        if @sections.key?(name)
-          section = @sections[name]
-        else
-          if @sections.empty?
-            general = Section.new
-            general.name(:general)
-            # TODO: require this and other files after I18n config in engine.rb
-            #general.display_name(I18n.t('admin_it.collection.no_data'))
-            general.display_name('Основные свойства')
-            general.fields(*fields.map(&:field_name))
-            @sections[:general] = general
-          end
-          section = Section.new
-          section.name(name)
-          @sections[name] = section
-        end
-        section.instance_eval(&block) if block_given?
-      end
     end
 
     def self.single?

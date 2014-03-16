@@ -1,16 +1,12 @@
-require File.join %w(extend_it dsl)
-
 module AdminIt
   class TableContext < CollectionContext
-    class << self
-      dsl_accessor :page_size, default: 10 do |value|
-        value.is_a?(Fixnum) && value > 0 ? value : 10
-      end
-
+    dsl do
+      dsl_accessor :page_size, default: 10
       dsl_boolean :actions
-
       dsl_block :row
+    end
 
+    class << self
       protected
 
       def default_icon
@@ -18,12 +14,23 @@ module AdminIt
       end
     end
 
-    def self.path
-      AdminIt::Engine.routes
-        .url_helpers.send("table_#{resource.plural}_path")
+    def self.actions?
+      @actions.nil? ? true : @actions == true
     end
 
-    class_attr_reader :page_size, :actions?
+    def self.page_size
+      @page_size ||= 10
+    end
+
+    def self.page_size=(value)
+      @page_size = value.is_a?(Fixnum) && value > 0 ? value : 10
+    end
+
+    def self.path
+      AdminIt::Engine.routes.url_helpers.send("table_#{resource.plural}_path")
+    end
+
+    class_attr_reader :page_size, :actions?, :row
 
     after_load do |store: {}, params: {}|
       self.page = params[:page] || store[:page]

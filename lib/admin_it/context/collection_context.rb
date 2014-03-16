@@ -1,19 +1,17 @@
 require 'json'
 require 'csv'
-require File.join %w(extend_it symbolize)
-
-using ExtendIt::Symbolize
 
 module AdminIt
   class CollectionContext < Context
     extend FiltersHolder
 
-    @entities_getter = nil
-
     class << self
-      dsl_block :entities
+      attr_reader :entities_getter, :default_sorting
+    end
+
+    dsl do
+      dsl_block :entities, variable: :entities_getter
       dsl_accessor :default_sorting
-      dsl_use_hash :filters
     end
 
     def self.before_configure
@@ -25,21 +23,6 @@ module AdminIt
           .select { |f| visible.include?(f.field.field_name) }
           .map { |f| [f.filter_name, f] }
       ]
-    end
-
-    def self.filter(name, filter_class: nil, &block)
-      assert_symbol(:name)
-      if @filters.key?(name)
-        filter = @filters[name] = Class.new(@filters[name]) if block_given?
-      else
-        filter_class = Filter if filter_class.nil? || !filter_class <= Filter
-        filter = @filters[name] = filter_class.create(name, self)
-      end
-      filter.instance_eval(&block) if block_given?
-    end
-
-    def self.entities_getter
-      @entities
     end
 
     def self.collection?

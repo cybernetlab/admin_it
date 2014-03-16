@@ -14,12 +14,12 @@ describe AdminIt::ObjectData::Context do
     end
   end
 
-  it 'retrieves all fields for ancestors' do
+  xit 'retrieves all fields for ancestors' do
     fields = object_context.fields(scope: :all)
     expect(fields.size).to eq 3
   end
 
-  it 'reads fields' do
+  xit 'reads fields' do
     single_object_context.entity = object
     expect(single_object_context.values).to eq r: 'r_value', rw: 'rw_value'
   end
