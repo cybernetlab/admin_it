@@ -27,6 +27,16 @@ bundle install
 
 `config.controller`: класс контроллера, от которого наследуются все контроллеры, используемые библиотекой `admin_it`. По умолчанию для Rails: `ActionController::Base`.
 
+Пример файла конфигурации:
+
+```ruby
+require 'admin_it'
+
+AdminIt.config do |config|
+  config.root = 'admin_it'
+end
+```
+
 # Использование
 
 Библиотека оперирует такими понятиями, как:
