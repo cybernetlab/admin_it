@@ -93,8 +93,8 @@ module AdminIt
       end
     end
 
-    def all_filters
-      self.class.filters
+    def all_filters(scope: :all)
+      self.class.filters(scope: scope)
     end
 
     def filters

@@ -144,15 +144,10 @@ module ExtendIt
 
         define_method "use_#{hash_name}" do |*names, except: nil|
           hash = dsl_get(variable || hash_name, {})
-#          puts "---< #{names}, except: #{except} #{hash.inspect}"
           keys = hash.keys
           names = Dsl.expand_asterisk(names.ensure_symbols, keys)
-#          puts "---> #{names}"
           names = names.empty? ? keys : names & keys
-#          puts "---> #{names}"
           names -= except.ensure_symbols
-#          puts "---> #{names}"
-#          puts ''
           hash.replace(Hash[names.map { |n| [n, hash[n]] }])
         end
       end

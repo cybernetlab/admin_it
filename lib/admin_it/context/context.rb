@@ -202,6 +202,11 @@ module AdminIt
       params
     end
 
+    def url_for(*args, **params)
+      return nil if @template.nil?
+      @template.url_for(*args, url_params(**params))
+    end
+
     protected
 
     def context_param

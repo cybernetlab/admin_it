@@ -126,7 +126,7 @@ module AdminIt
     end
 
     def display_name
-      @display_name ||= plural.split('_').map { |s| s.capitalize }.join(' ')
+      @display_name ||= i18n_display_name || default_display_name
     end
 
     def collection_path
@@ -209,6 +209,22 @@ module AdminIt
 
     def default_filters
       []
+    end
+
+    def default_display_name
+      plural.split('_').map { |s| s.capitalize }.join(' ')
+    end
+
+    def i18n_display_name
+      begin
+        I18n
+          .t!("admin_it.resources.#{name}.display_name.plural")
+          .split(' ')
+          .map { |s| s.mb_chars.capitalize }
+          .join(' ')
+      rescue I18n::MissingTranslationData
+        nil
+      end
     end
 
     private

@@ -226,6 +226,7 @@ module AdminIt
     def filters(scope: :all)
       case scope
       when nil, :all then @filters.values
+      when :value then @filters.values.select { |f| f <= ValueFilter }
       else @filters.values
       end
     end

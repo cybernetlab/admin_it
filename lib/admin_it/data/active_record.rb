@@ -1,7 +1,9 @@
 module AdminIt
   module ActiveRecordData
     module Resource
-      def display_name
+      protected
+
+      def default_display_name
         entity_class
           .model_name
           .human#(count: 0)
@@ -9,8 +11,6 @@ module AdminIt
           .map { |s| s.mb_chars.capitalize }
           .join(' ')
       end
-
-      protected
 
       def default_fields(&block)
         enum = Enumerator.new do |yielder|

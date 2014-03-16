@@ -27,4 +27,5 @@
         span class="caret"
       ul class="dropdown-menu" role="menu"
         - for_context.all_filters.each do |filter|
-          li: a href==url_for(filters: filter.filter_name) =filter.display_name
+          li: a href==for_context.url_for(filters: filter.filter_name)
+            = filter.display_name

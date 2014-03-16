@@ -13,18 +13,25 @@
         - opts[:class] = 'text-info' if for_context.sorting.any? { |s| s.index("#{k}:") == 0 }
         = header.cell opts do
           = h
-          - v_filter = for_context.filters.select do |f|
-            - f.is_a?(AdminIt::ValueFilter) && f.class.field == for_context.field(k)
+          - filter_class = for_context.all_filters(scope: :value).find do |f|
+            - f.field.field_name == k
+          - unless filter_class.nil?
+            - active_filter = for_context.filters.find { |f| f.is_a?(filter_class) }
+            - if !active_filter.nil? && !active_filter.values.empty?
+              a class="btn btn-success btn-xs pull-right" href==for_context.url_for(filters: "-#{filter_class.filter_name}")
+                i class="fa fa-filter"
+                = ' '
+                i class="fa fa-times-circle-o text-danger"
           - if for_context.sortable.include?(k) || !v_filter.nil?
             div class="btn-group btn-group-xs pull-right fade" data-toggle="popup-target"
               - unless for_context.sorting.include?("#{k}:asc")
-                a class="btn btn-default" href==url_for(for_context.url_params(sorting: "#{k}:asc"))
+                a class="btn btn-default" href==for_context.url_for(sorting: "#{k}:asc")
                   i class="fa fa-caret-down"
               - unless for_context.sorting.include?("#{k}:desc")
-                a class="btn btn-default" href==url_for(for_context.url_params(sorting: "#{k}:desc"))
+                a class="btn btn-default" href==for_context.url_for(sorting: "#{k}:desc")
                   i class="fa fa-caret-up"
-              - unless v_filter.nil?
-                a class="btn btn-info" href="#"
+              - if !filter_class.nil? && (active_filter.nil? || active_filter.values.empty?)
+                a class="btn btn-info" href==for_context.url_for(filters: "+#{filter_class.filter_name}", active_filter: filter_class.filter_name)
                   i class="fa fa-filter"
       - if for_context.actions?
         th style='border: none'
