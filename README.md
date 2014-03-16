@@ -38,6 +38,14 @@ bundle install
 
 # Changes
 
+`1.0.10`
+
+* added: sorting indicator in table column header
+
+`1.0.9`
+
+* added: filter button in table column header
+
 `1.0.8`
 
 * dsl code fully refactored

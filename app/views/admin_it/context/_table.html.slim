@@ -10,9 +10,13 @@
     = _table.header do |header|
       - for_context.headers.each do |k, h|
         - opts = { :'data-toggle' => 'popup' }
-        - opts[:class] = 'text-info' if for_context.sorting.any? { |s| s.index("#{k}:") == 0 }
+        - active_sorting = for_context.sorting.find { |s| s.index("#{k}:") == 0 }
+        - opts[:class] = 'text-info' unless active_sorting.nil?
         = header.cell opts do
           = h
+          - unless active_sorting.nil?
+            = ' '
+            i class="fa fa-caret-#{active_sorting.split(':').last == 'asc' ? 'down' : 'up'}"
           - filter_class = for_context.all_filters(scope: :value).find do |f|
             - f.field.field_name == k
           - unless filter_class.nil?
