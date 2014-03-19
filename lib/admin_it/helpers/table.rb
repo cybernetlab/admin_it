@@ -25,11 +25,18 @@ module AdminIt
         resource = parent.parent.resource
         single = resource.singles.select { |c| !(c <= NewContext) }
         buttons = single.map do |_context|
+          if _context <= ShowContext && context.show_in_dialog?
+            '<a class="btn btn-xs btn-info" ' +
+            %Q{data-toggle="modal" data-target="#confirm_modal" } +
+            %Q{href="#{_context.path(entity)}?layout=dialog">} +
+            %Q{<i class="fa fa-#{_context.icon}"></i></a>}
+          else
             cl = _context <= ShowContext ? 'info' : 'default'
             href = _context.path(entity)
             "<a class=\"btn btn-xs btn-#{cl}\" href=\"#{href}\">" \
             "<i class=\"fa fa-#{_context.icon}\"></i></a>"
           end
+        end
         if resource.destroyable?
           if context.confirm_destroy?
             confirm = single.find { |c| c.context_name == :confirm } ||

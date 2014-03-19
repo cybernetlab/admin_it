@@ -12,6 +12,7 @@ module AdminIt
     dsl do
       dsl_block :entities, variable: :entities_getter
       dsl_accessor :default_sorting
+      dsl_boolean :show_in_dialog
     end
 
     def self.before_configure
@@ -23,6 +24,10 @@ module AdminIt
           .select { |f| visible.include?(f.field.field_name) }
           .map { |f| [f.filter_name, f] }
       ]
+    end
+
+    def self.show_in_dialog?
+      @show_in_dialog.nil? ? @show_in_dialog = true : @show_in_dialog == true
     end
 
     def self.collection?
@@ -41,7 +46,7 @@ module AdminIt
     end
 
     attr_accessor :entity
-    class_attr_reader :entities_getter, :path
+    class_attr_reader :entities_getter, :path, :show_in_dialog?
 
     before_load do |store: {}, params: {}|
       self.sorting = store[:sorting] || self.class.default_sorting

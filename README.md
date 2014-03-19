@@ -41,6 +41,7 @@ bundle install
 `1.0.10`
 
 * added: sorting indicator in table column header
+* added: sections
 
 `1.0.9`
 

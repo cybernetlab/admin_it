@@ -15,7 +15,8 @@ module AdminIt
     extend DisplayableName
     include ExtendIt::Callbacks
 
-    TYPES = %i(unknown integer float string date relation enum)
+    TYPES = %i(unknown integer float string date datetime time relation enum
+               binary)
 
     define_callbacks :initialize
 
@@ -29,16 +30,16 @@ module AdminIt
       dsl_block :read, :write, :render, :display
 
       def hide
-        @visible = false
+        dsl_set(:visible, false)
       end
 
       def show
-        @visible = true
+        dsl_set(:visible, true)
       end
     end
 
     class << self
-      attr_reader :type, :read, :write, :render, :display
+      attr_reader :read, :write, :render, :display, :type
 
       protected
 
@@ -65,27 +66,29 @@ module AdminIt
 
     inherited_class_reader :field_name, :entity_class
 
-    def self.create(name, _entity_class,
-                    type: :unknown,
-                    readable: true,
-                    writable: true,
-                    visible: true,
-                    sortable: true
-                   )
+    def self.create(name, _entity_class, **opts)
+#                    type: :unknown,
+#                    readable: true,
+#                    writable: true,
+#                    visible: true,
+#                    sortable: true
+#                   )
       base = self
+#      _type, _readable, _writable, _visible, _sortable =
+#        type, readable, writable, visible, sortable
       Class.new(base) do
         @field_name, @entity_class = name, _entity_class
         import_data_module(base)
-        @readable = readable == true
-        @writable = writable == true
-        @visible = visible == true
-        @sortable = sortable == true
-        self.type = type
+        @readable = opts[:readable].nil? ? true : opts[:readable] == true
+        @writable = opts[:writable].nil? ? true : opts[:writable] == true
+        @visible = opts[:visible].nil? ? true : opts[:visible] == true
+        @sortable = opts[:sortable].nil? ? true : opts[:sortable] == true
+        self.type = opts[:type]
       end
     end
 
     def self.type=(value)
-      TYPES.include?(value) ? value : TYPES[0]
+      @type = TYPES.include?(value) ? value : TYPES[0]
     end
 
     def self.placeholder

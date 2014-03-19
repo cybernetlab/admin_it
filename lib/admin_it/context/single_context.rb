@@ -4,25 +4,39 @@ module AdminIt
     include ExtendIt::Dsl
     include Renderable
 
-    attr_reader :name, :display_name
+    attr_reader :name, :display_name, :fields
 
     dsl do
       dsl_accessor :name, :display_name
       dsl_boolean :visible
+
+      def use_fields(*names, except: nil)
+        names = names.ensure_symbols
+        fields =
+          if names.nil? || names.empty?
+            dsl_get(:fields, default: [])
+          else
+            context = dsl_get(:context, default: nil)
+            names & context.fields.map(&:field_name)
+          end
+        fields -= except.ensure_symbols unless except.nil?
+        dsl_set(:fields, fields.uniq)
+      end
     end
 
     def visible?
       @visible.nil? ? @visible = true : @visible == true
     end
 
-    def fields(*names)
-      names.empty? ? @fields ||= [] : @fields = names
-    end
-
-    def initialize(name, *fields, display_name: nil)
+    def initialize(name, context, display_name: nil)
       @name = name
       @display_name = display_name || name
-      @fields = fields
+      @context = context
+      @fields = context.fields.map(&:field_name)
+      context.sections.each do |section|
+        next if section.name == name
+        @fields -= section.fields
+      end
     end
   end
 
@@ -53,12 +67,12 @@ module AdminIt
           #general.display_name(I18n.t('admin_it.collection.no_data'))
           general = Section.new(
             :general,
-            *fields.map(&:field_name),
+            self,
             display_name: 'Основные свойства'
           )
           @sections[:general] = general
         end
-        Section.new(name)
+        name == :general ? @sections[:general] : Section.new(name, self)
       end
     end
 

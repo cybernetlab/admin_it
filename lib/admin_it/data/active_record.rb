@@ -3,6 +3,21 @@ module AdminIt
     module Resource
       protected
 
+      TYPE_MAPPING = {
+        primary_key: :integer,
+        string: :string,
+        text: :string,
+        integer: :integer,
+        float: :float,
+        decimal: :float,
+        datetime: :datetime,
+        timestamp: :datetime,
+        time: :time,
+        date: :date,
+        binary: :binary,
+        boolean: :boolean
+      }
+
       def default_display_name
         entity_class
           .model_name
@@ -24,7 +39,7 @@ module AdminIt
           entity_class.columns_hash.each do |name, c|
             next if exclude.include?(name)
             name = name.to_sym
-            opts = { type: c.type }
+            opts = { type: TYPE_MAPPING[c.type] }
             if name == :id
               opts[:visible] = false
               opts[:writable] = false
@@ -50,7 +65,7 @@ module AdminIt
     module CollectionContext
       def entities=(value)
         super(value)
-        @count = value.count
+        @count = @entities.nil? ? 0 : @entities.count
       end
 
       protected
@@ -70,7 +85,9 @@ module AdminIt
           name, order = _sort.split(':')
           sort[name.to_sym] = order.to_sym
         end
-        collection = collection.order(sort) unless sort.empty?
+        unless collection.nil? || sort.empty?
+          collection = collection.order(sort)
+        end
         collection
       end
     end

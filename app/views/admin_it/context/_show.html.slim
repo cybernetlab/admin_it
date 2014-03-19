@@ -16,11 +16,32 @@
   - if for_context.confirm == :destroy
     p = t('admin_it.confirm.destroy.header')
 
-dl class="dl-horizontal"
-  - for_context.fields.each do |f|
-    - next if f.type == :relation
-    dt = f.display_name
-    = field f, tag: 'dl'
+- if for_context.sections.size > 0
+  ul class="nav nav-tabs"
+    - for_context.sections.each do |section|
+      li class="#{section.name == for_context.section ? 'active' : ''}"
+        a href="##{section.name}" data-toggle="tab"
+          = section.display_name
+  div class="tab-content"
+    - for_context.sections.each do |section|
+      div class="tab-pane #{section.name == for_context.section ? 'active' : ''}" id==section.name
+        - if section.fields.size > 0
+          dl class="dl-horizontal"
+            - section.fields.each do |f_name|
+              - f = for_context.field(f_name)
+              - next if f.type == :relation
+              dt = f.display_name
+              - value = f.show(for_context.entity)
+              - value = value.nil? ? '&nbsp;'.html_safe : value.to_s
+              = field value, tag: 'dd'
+- else
+  dl class="dl-horizontal"
+    - for_context.fields.each do |f|
+      - next if f.type == :relation
+      dt = f.display_name
+      - value = f.show(for_context.entity)
+      - value = value.nil? ? '&nbsp;'.html_safe : value.to_s
+      = field value, tag: 'dd'
 div class="clearfix"
 
 - if for_context.confirm?
