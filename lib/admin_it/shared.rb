@@ -61,4 +61,37 @@ module AdminIt
       ''
     end
   end
+
+  module Defaults
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
+    def self.extended(base)
+      base.extend(ClassMethods)
+    end
+
+    class Definer
+      def method_missing(method_name, *args, &block)
+        unless /\Adefault_/ =~ method_name
+          method_name = "default_#{method_name}".to_sym
+        end
+        @caller_class.class_eval do
+          define_method(method_name, &block)
+          protected method_name
+        end
+      end
+
+      def initialize(caller_class)
+        @caller_class = caller_class
+      end
+    end
+
+    module ClassMethods
+      def defaults(&block)
+        return unless block_given?
+        Definer.new(self).instance_eval(&block)
+      end
+    end
+  end
 end

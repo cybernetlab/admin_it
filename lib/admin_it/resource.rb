@@ -8,6 +8,7 @@ module AdminIt
     extend ExtendIt::Base
     include ExtendIt::Callbacks
     include ExtendIt::Dsl
+    include Defaults
     include Iconed
     include FieldsHolder
     include FiltersHolder
@@ -42,6 +43,24 @@ module AdminIt
       dsl_accessor :default_context do |value|
         value = value.ensure_symbol
         @contexts.key?(value) ? value : nil
+      end
+    end
+
+    defaults do
+      fields { puts "FIELDS"; [] }
+
+      filters { puts "FILTERS"; [] }
+
+      display_name do
+        puts "DISPLAY"
+        plural.split('_').map { |s| s.capitalize }.join(' ')
+      end
+
+      contexts do
+        CONTEXTS.map do |c|
+          context_class = AdminIt.const_get("#{c.capitalize}Context")
+          context_class.create(c, self)
+        end
       end
     end
 
@@ -174,7 +193,6 @@ module AdminIt
 
     protected
 
-    # LAYOUTS = %w(content)
     COLLECTIONS = %i(table tiles list)
     SINGLE = %i(show new edit)
     CONTEXTS = COLLECTIONS + SINGLE
@@ -194,25 +212,6 @@ module AdminIt
       unless @entity_class.is_a?(Class)
         fail ArgumentError, 'Wrong entity class'
       end
-    end
-
-    def default_fields
-      []
-    end
-
-    def default_contexts
-      CONTEXTS.map do |c|
-        context_class = AdminIt.const_get("#{c.capitalize}Context")
-        context_class.create(c, self)
-      end
-    end
-
-    def default_filters
-      []
-    end
-
-    def default_display_name
-      plural.split('_').map { |s| s.capitalize }.join(' ')
     end
 
     def i18n_display_name
