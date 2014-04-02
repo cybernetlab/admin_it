@@ -1,5 +1,7 @@
 module AdminIt
+  #
   module Helpers
+    #
     class Cell < WrapIt::Base
       include WrapIt::TextContainer
       default_tag 'td'
@@ -16,6 +18,7 @@ module AdminIt
       end
     end
 
+    #
     class ActionsCell < WrapIt::Base
       default_tag 'td'
 
@@ -27,9 +30,9 @@ module AdminIt
         buttons = single.map do |_context|
           if _context <= ShowContext && context.show_in_dialog?
             '<a class="btn btn-xs btn-info" ' +
-            %Q{data-toggle="modal" data-target="#confirm_modal" } +
-            %Q{href="#{_context.path(entity)}?layout=dialog">} +
-            %Q{<i class="fa fa-#{_context.icon}"></i></a>}
+            %Q(data-toggle="modal" data-target="#confirm_modal" ) +
+            %Q(href="#{_context.path(entity)}?layout=dialog">) +
+            %Q(<i class="fa fa-#{_context.icon}"></i></a>)
           else
             cl = _context <= ShowContext ? 'info' : 'default'
             href = _context.path(entity)
@@ -44,8 +47,8 @@ module AdminIt
             unless confirm.nil?
               buttons <<
                 '<a class="btn btn-xs btn-danger" ' +
-                %Q{data-toggle="modal" data-target="#confirm_modal" } +
-                %Q{href="#{confirm.path(entity)}} +
+                %Q(data-toggle="modal" data-target="#confirm_modal" ) +
+                %Q(href="#{confirm.path(entity)}) +
                 '?layout=dialog&confirm=destroy">' +
                 '<i class="fa fa-trash-o"></i></a>'
             end
@@ -69,11 +72,13 @@ module AdminIt
       end
     end
 
+    #
     class Header < WrapIt::Container
       default_tag 'tr'
       child :cell, Cell, tag: 'th'
     end
 
+    #
     class Row < WrapIt::Container
       default_tag 'tr'
       child :cell, Cell
@@ -81,12 +86,11 @@ module AdminIt
 
       before_capture do
         block = parent.context.row
-        unless block.nil?
-          instance_exec(parent.context.entity, &block)
-        end
+        instance_exec(parent.context.entity, &block) unless block.nil?
       end
     end
 
+    #
     class Table < WrapIt::Container
       default_tag 'table'
       html_class %w(table)

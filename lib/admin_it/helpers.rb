@@ -1,6 +1,8 @@
 require 'wrap_it'
 
+#
 module AdminIt
+  #
   module Helpers; end
   WrapIt.register_module Helpers
 end

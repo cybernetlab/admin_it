@@ -1,5 +1,6 @@
 module AdminIt
   module Helpers
+    #
     class Input < WrapIt::Base
       html_class 'form-control'
       attr_accessor :field, :entity

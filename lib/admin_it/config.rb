@@ -1,4 +1,5 @@
 module AdminIt
+  #
   module Config
     def self.root
       @root ||= Rails.root.join('app', 'admin_it')

@@ -1,5 +1,7 @@
 module AdminIt
+  #
   module Helpers
+    #
     class TopMenuItem < WrapIt::Link
       attr_accessor :resource
       option :resource
@@ -19,6 +21,7 @@ module AdminIt
       end
     end
 
+    #
     class TopMenu < WrapIt::Container
       default_tag 'ul'
       html_class 'nav'

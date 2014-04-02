@@ -1,5 +1,7 @@
 module AdminIt
+  #
   module Helpers
+    #
     class Field < WrapIt::Base
       include WrapIt::TextContainer
       attr_accessor :field, :context
@@ -9,9 +11,7 @@ module AdminIt
       argument :context, if: AdminIt::Context
 
       before_capture do
-        unless context.is_a?(AdminIt::Context)
-          self.context = @template.context
-        end
+        self.context = @template.context unless context.is_a?(AdminIt::Context)
         if field.is_a?(AdminIt::Field)
           entity = context.entity
           body << html_safe(field.show(entity).to_s) if body.empty?

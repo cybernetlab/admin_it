@@ -1,10 +1,12 @@
 module AdminIt
   module HashData
+    #
     module Context
       def self.included(base)
         base.extend(ClassMethods)
       end
 
+      #
       module ClassMethods
         def load_fields
           []
@@ -12,6 +14,7 @@ module AdminIt
       end
     end
 
+    #
     module Field
       protected
 

@@ -3,6 +3,7 @@ require File.join %w(admin_it data object)
 require File.join %w(admin_it data hash)
 require File.join %w(admin_it data active_record)
 
+#
 module AdminIt
   def self.register_data(entity_class, mod)
     return if entity_class.nil?

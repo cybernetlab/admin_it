@@ -1,4 +1,5 @@
 module AdminIt
+  #
   class FieldFilter < Filter
     dsl do
       dsl_accessor :field

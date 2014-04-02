@@ -1,9 +1,11 @@
 require File.join %w(extend_it base)
 require File.join %w(extend_it callbacks)
 
-using ExtendIt::Ensures
-
+#
 module AdminIt
+  using EnsureIt if EnsureIt.refined?
+
+  #
   class Resource
     extend ExtendIt::Base
     include ExtendIt::Callbacks
@@ -47,12 +49,11 @@ module AdminIt
     end
 
     defaults do
-      fields { puts "FIELDS"; [] }
+      fields { [] }
 
-      filters { puts "FILTERS"; [] }
+      filters { [] }
 
       display_name do
-        puts "DISPLAY"
         plural.split('_').map { |s| s.capitalize }.join(' ')
       end
 
@@ -75,18 +76,13 @@ module AdminIt
       destroyable: true,
       auto_filters: true
     )
-      name = name.ensure_symbol || fail(
-        ArgumentError,
-        '`name` argument for resource constructor should be a Symbol ' \
-        'or a String'
-      )
-
+      name = name.ensure_symbol!
       @name, @entity_class = name, entity_class
       if @entity_class.nil?
         begin
           @entity_class = Object.const_get(name.to_s.camelize) # !PORTABLE
         rescue NameError
-          fail ArgumentError, "Can't find entity class for #{name}"
+          raise ArgumentError, "Can't find entity class for #{name}"
         end
       end
 
@@ -215,15 +211,13 @@ module AdminIt
     end
 
     def i18n_display_name
-      begin
-        I18n
-          .t!("admin_it.resources.#{name}.display_name.plural")
-          .split(' ')
-          .map { |s| s.mb_chars.capitalize }
-          .join(' ')
-      rescue I18n::MissingTranslationData
-        nil
-      end
+      I18n
+        .t!("admin_it.resources.#{name}.display_name.plural")
+        .split(' ')
+        .map { |s| s.mb_chars.capitalize }
+        .join(' ')
+    rescue I18n::MissingTranslationData
+      nil
     end
 
     private
@@ -234,6 +228,7 @@ module AdminIt
       resource_module = data_module.const_get(:Resource)
       extend(resource_module) if resource_module.is_a?(Module)
     rescue NameError
+      nil
     end
   end
 

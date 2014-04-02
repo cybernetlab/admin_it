@@ -1,7 +1,11 @@
 require 'json'
 require 'csv'
 
+#
 module AdminIt
+  using EnsureIt if EnsureIt.refined?
+
+  #
   class CollectionContext < Context
     extend FiltersHolder
 
@@ -39,13 +43,14 @@ module AdminIt
     end
 
     def self.sortable_fields(*names)
-      names = names.ensure_symbols
+      names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
       fields.each do |_field|
         _field.sortable = names.include?(_field.field_name)
       end
     end
 
     attr_accessor :entity
+    attr_writer :entities
     class_attr_reader :entities_getter, :path, :show_in_dialog?
 
     before_load do |store: {}, params: {}|
@@ -165,9 +170,9 @@ module AdminIt
       self.entities = collection
     end
 
-    def entities=(value)
-      @entities = value
-    end
+    # def entities=(value)
+    #   @entities = value
+    # end
 
     def entities
       self.entity = nil
@@ -196,6 +201,7 @@ module AdminIt
     end
   end
 
+  #
   class ListContext < CollectionContext
     def self.path
       AdminIt::Engine.routes.url_helpers.send("list_#{resource.plural}_path")

@@ -1,5 +1,6 @@
 module AdminIt
   module ActiveRecordData
+    #
     module Resource
       protected
 
@@ -21,7 +22,7 @@ module AdminIt
       def default_display_name
         entity_class
           .model_name
-          .human#(count: 0)
+          .human# (count: 0)
           .split(' ')
           .map { |s| s.mb_chars.capitalize }
           .join(' ')
@@ -62,6 +63,7 @@ module AdminIt
       end
     end
 
+    #
     module CollectionContext
       def entities=(value)
         super(value)
@@ -92,15 +94,14 @@ module AdminIt
       end
     end
 
+    #
     module SingleContext
       protected
 
       def load_entity(identity: nil)
         identity ||= controller.params[:id]
         entity = entity_class.find(identity)
-        if AdminIt::Env.pundit?
-          controller.authorize(entity, "#{name}?")
-        end
+        controller.authorize(entity, "#{name}?") if AdminIt::Env.pundit?
         if child?
           fields
             .select { |f| f.type == :relation &&
@@ -117,6 +118,7 @@ module AdminIt
       end
     end
 
+    #
     module SavableSingleContext
       protected
 
@@ -131,9 +133,7 @@ module AdminIt
           next if field.type == :relation
           field.write(entity, params[field.name])
         end
-        if entity.save
-          controller.redirect_to_default
-        end
+        controller.redirect_to_default if entity.save
       end
 
       def add_child_context(for_resource, context_class: :table)
@@ -143,6 +143,7 @@ module AdminIt
       end
     end
 
+    #
     module NewContext
       def self.included(base)
         base.after_initialize do
@@ -166,13 +167,12 @@ module AdminIt
 
       def load_entity(identity: nil)
         entity = entity_class.new
-        if AdminIt::Env.pundit?
-          controller.authorize(entity, "#{name}?")
-        end
+        controller.authorize(entity, "#{name}?") if AdminIt::Env.pundit?
         entity
       end
     end
 
+    #
     module ShowContext
       def identity
         entity.id
@@ -181,21 +181,19 @@ module AdminIt
       protected
 
       def do_destroy_entity
-        if AdminIt::Env.pundit?
-          controller.authorize(entity, :destroy?)
-        end
-        if entity.destroy
-          controller.redirect_to_default
-        end
+        controller.authorize(entity, :destroy?) if AdminIt::Env.pundit?
+        controller.redirect_to_default if entity.destroy
       end
     end
 
+    #
     module EditContext
       def identity
         entity.id
       end
     end
 
+    #
     module TableContext
       def entities
         if @entities.count > page_size
@@ -208,6 +206,7 @@ module AdminIt
       end
     end
 
+    #
     module Field
       def self.included(base)
         base.class_eval do
@@ -268,6 +267,7 @@ module AdminIt
       end
     end
 
+    #
     module ValueFilter
       def all_values(collection = nil, &block)
         enum = Enumerator.new do |yielder|
@@ -296,7 +296,7 @@ module AdminIt
             conditions += " OR #{field.field_name} IS NULL"
           end
         end
-        collection = collection.where(conditions, *binding)
+        collection.where(conditions, *binding)
       end
     end
   end

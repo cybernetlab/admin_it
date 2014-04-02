@@ -2,7 +2,10 @@ require File.join %w(extend_it base)
 require File.join %w(extend_it dsl)
 require File.join %w(extend_it callbacks)
 
+#
 module AdminIt
+  using EnsureIt if EnsureIt.refined?
+
   #
   # Describes any field of data
   #
@@ -67,15 +70,7 @@ module AdminIt
     inherited_class_reader :field_name, :entity_class
 
     def self.create(name, _entity_class, **opts)
-#                    type: :unknown,
-#                    readable: true,
-#                    writable: true,
-#                    visible: true,
-#                    sortable: true
-#                   )
       base = self
-#      _type, _readable, _writable, _visible, _sortable =
-#        type, readable, writable, visible, sortable
       Class.new(base) do
         @field_name, @entity_class = name, _entity_class
         import_data_module(base)
@@ -88,7 +83,7 @@ module AdminIt
     end
 
     def self.type=(value)
-      @type = TYPES.include?(value) ? value : TYPES[0]
+      @type = value.ensure_symbol(values: TYPES, default: TYPES[0])
     end
 
     def self.placeholder
@@ -185,8 +180,8 @@ module AdminIt
     protected
 
     def read_value(entity)
-      raise NotImplementedError,
-            "Attempt to read field #{name} with unimplemented reader"
+      fail NotImplementedError,
+           "Attempt to read field #{name} with unimplemented reader"
     end
 
     def show_value(entity)
@@ -194,38 +189,32 @@ module AdminIt
     end
 
     def write_value(entity, value)
-      raise NotImplementedError,
-            "Attempt to write to field #{name} with unimplemented writer"
+      fail NotImplementedError,
+           "Attempt to write to field #{name} with unimplemented writer"
     end
   end
 
+  #
   module FieldsHolder
     extend ExtendIt::DslModule
 
     dsl do
       dsl_hash_of_objects :fields, single: :field do |name, **opts|
         field_class = opts[:class] || opts[:field_class] || Field
-        unless field_class.is_a?(Class) && field_class <= Field
-          fail(
-            ArgumentError,
-            'field class should be AdminIt::Field descendant'
-          )
-        end
+        field_class.ensure_class(Field)
         field_class.create(name, entity_class)
       end
 
       def hide_fields(*names)
         hash = dsl_get(:fields, {})
-        names.ensure_symbols.each do |name|
-          hash[name].hide if hash.key?(name)
-        end
+        names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
+        names.each { |name| hash[name].hide if hash.key?(name) }
       end
 
       def show_fields(*names)
         hash = dsl_get(:fields, {})
-        names.ensure_symbols.each do |name|
-          hash[name].show if hash.key?(name)
-        end
+        names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
+        names.each { |name| hash[name].show if hash.key?(name) }
       end
     end
 

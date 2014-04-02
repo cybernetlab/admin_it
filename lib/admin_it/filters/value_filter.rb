@@ -1,4 +1,5 @@
 module AdminIt
+  #
   class ValueFilter < FieldFilter
     attr_reader :values
 

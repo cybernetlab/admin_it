@@ -1,4 +1,5 @@
 module AdminIt
+  #
   class TableContext < CollectionContext
     dsl do
       dsl_accessor :page_size, default: 10
@@ -50,13 +51,14 @@ module AdminIt
 
     def page=(value)
       if value.is_a?(String)
-        value = case value.downcase
-        when 'next' then page + 1
-        when 'prev', 'previous' then page - 1
-        when 'first' then 1
-        when 'last' then pages
-        else value.to_i
-        end
+        value =
+          case value.downcase
+          when 'next' then page + 1
+          when 'prev', 'previous' then page - 1
+          when 'first' then 1
+          when 'last' then pages
+          else value.to_i
+          end
       end
       if value.is_a?(Fixnum) && value > 0 && value <= pages
         # reset entities enumerator if page changed

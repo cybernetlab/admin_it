@@ -38,6 +38,9 @@ bundle install
 
 # Changes
 
+`1.0.12`
+* ensure_it integration
+
 `1.0.10`
 
 * added: sorting indicator in table column header

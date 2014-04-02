@@ -1,4 +1,5 @@
 module AdminIt
+  #
   module Controller
     def self.included(base)
       base.class_eval do
@@ -31,7 +32,7 @@ module AdminIt
       @context = context_class.new(self)
       yield if block_given?
       layout = ['admin_it', params[:layout]].compact.join('_')
-      if !performed?
+      unless performed?
         if layout == 'admin_it' && !request.query_parameters.empty?
           redirect_to request.path
         else

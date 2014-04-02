@@ -1,5 +1,7 @@
 module AdminIt
+  #
   module Helpers
+    #
     class Page < WrapIt::Container
       default_tag 'body'
 

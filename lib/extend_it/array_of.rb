@@ -1,10 +1,7 @@
 require 'forwardable'
-require File.join %w(extend_it ensures)
-require File.join %w(extend_it asserts)
-
-using ExtendIt::Ensures if ExtendIt.config.use_refines?
 
 module ExtendIt
+  #
   module ArrayOf
     def array_of(entity_class, &block)
       array_name = "ArrayOf#{entity_class.name.split('::').last}"
@@ -19,8 +16,9 @@ module ExtendIt
       const_set(array_name, array_class)
     end
 
+    #
     module ArrayClassMethods
-      include Asserts
+      using EnsureIt if ENSURE_IT_REFINED
 
       attr_reader :scopes, :finder
 
@@ -37,27 +35,31 @@ module ExtendIt
       end
 
       def scope(*names, &block)
-        names.flatten.uniq.each do |name|
-          name = name.ensure_symbol || next
+        names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
+        names.each do |name|
           @scopes[name] = block.nil? ? proc { |e| e.send(name) } : block
           str = name.to_s
           if str[-1] == '?'
-            @scopes[str[0..-2].to_sym] = block.nil? ? proc { |e| e.send(name) } : block
+            @scopes[str[0..-2].to_sym] =
+              block.nil? ? proc { |e| e.send(name) } : block
           end
         end
       end
 
       def find_by(name, &block)
-        assert_symbol(:name)
+        name = name.ensure_symbol!
         @finder = block.nil? ? proc { |e| e.send(name) } : block
       end
 
-      def has_finder?
+      def finder?
         !@finder.nil?
       end
     end
 
+    #
     module ArrayMethods
+      using EnsureIt if ENSURE_IT_REFINED
+
       def initialize(*arr)
         @array = self.class.select(arr.flatten)
         super(@array)

@@ -1,5 +1,9 @@
-require File.join %w(extend_it config)
-#require File.join %w(extend_it caller)
-#require File.join %w(extend_it array_of)
-#require File.join %w(extend_it dsl)
+if !defined?(EnsureIt) && RUBY_VERSION >= '2.1.0'
+  require 'ensure_it_refined'
+else
+  require 'ensure_it'
+end
 
+EnsureIt.configure do |config|
+  config.error_class = ArgumentError
+end

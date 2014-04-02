@@ -1,4 +1,8 @@
+#
 module AdminIt
+  using EnsureIt if EnsureIt.refined?
+
+  #
   class ShowContext < SingleContext
     extend Renderable
     include Identifiable
@@ -22,9 +26,7 @@ module AdminIt
     end
 
     def self.read(entity)
-      unless @read.nil?
-        @read.call(entity)
-      end
+      @read.call(entity) unless @read.nil?
     end
 
     attr_reader :confirm
@@ -34,8 +36,7 @@ module AdminIt
     end
 
     def confirm=(value)
-      value = value.downcase.to_sym if value.is_a?(String)
-      return unless value.is_a?(Symbol) && CONFIRMS.include?(value)
+      value = value.ensure_symbol(downcase: true, values: CONFIRMS) || return
       @confirm = value
     end
 

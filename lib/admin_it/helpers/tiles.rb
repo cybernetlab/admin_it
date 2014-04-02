@@ -1,5 +1,7 @@
 module AdminIt
+  #
   module Helpers
+    #
     class TileHeader < WrapIt::Base
       include WrapIt::TextContainer
       default_tag 'h4'

@@ -1,9 +1,9 @@
-require File.join %w(extend_it ensures)
-
+#
 module ExtendIt
-  module Dsl
-    using ExtendIt::Ensures if ExtendIt.config.use_refines?
+  using EnsureIt if EnsureIt.refined?
 
+  #
+  module Dsl
     def self.included(base)
       base.extend(ClassMethods)
       base.class_eval do
@@ -24,6 +24,7 @@ module ExtendIt
       dsl_obj.instance_eval(&block) if block_given?
     end
 
+    #
     module ClassMethods
       def dsl(&block)
         if @dsl.nil?
@@ -44,9 +45,7 @@ module ExtendIt
           attr_reader :dsl_receiver
 
           def dsl_get(var_name, default = nil)
-            var_name = var_name.ensure_instance_variable_name || fail(
-              ArgumentError, "Wrong `var_name` argument: #{var_name.inspect}"
-            )
+            var_name = var_name.ensure_symbol!(name_of: :instance_variable)
             if default.nil? && !block_given?
               fail(ArgumentError, '`default` or block should be specified')
             end
@@ -59,10 +58,8 @@ module ExtendIt
           end
 
           def dsl_set(var_name, value)
-            var_name = var_name.ensure_instance_variable_name || fail(
-              ArgumentError, "Wrong `var_name` argument: #{var_name.inspect}"
-            )
-            setter_name = var_name.ensure_setter_name
+            var_name = var_name.ensure_symbol!(name_of: :instance_variable)
+            setter_name = var_name.ensure_symbol!(name_of: :setter)
             if dsl_receiver.respond_to?(setter_name)
               dsl_receiver.send(setter_name, value)
             else
@@ -75,14 +72,15 @@ module ExtendIt
       end
     end
 
+    #
     module DslMethods
       def dsl_accessor(*names, default: nil, variable: nil, &setter)
-        names = names.ensure_symbols
+        names = names.ensure_array(:flatten, :compact, :uniq)
         variable = nil if names.size != 1
-        variable = variable.ensure_local_name unless variable.nil?
+        variable = variable.ensure_symbol(name_of: :local)
         names.each do |name|
-          name = name.ensure_local_name || next
-          setter_name = name.ensure_setter_name
+          name = name.ensure_symbol(name_of: :getter) || next
+          setter_name = name.ensure_symbol(name_of: :setter) || next
 
           define_method setter_name do |*args|
             obj =
@@ -104,12 +102,12 @@ module ExtendIt
 
       def dsl_boolean(*names, default: true, variable: nil)
         default = default == true
-        names = names.ensure_symbols
+        names = names.ensure_array(:flatten, :compact, :uniq)
         variable = nil if names.size != 1
-        variable = variable.ensure_local_name unless variable.nil?
+        variable = variable.ensure_symbol(name_of: :local)
         names.each do |name|
-          name = name.ensure_local_name || next
-          setter_name = name.ensure_setter_name
+          name = name.ensure_symbol(name_of: :getter) || next
+          setter_name = name.ensure_symbol(name_of: :setter) || next
 
           define_method name do |value = nil|
             send(setter_name, value.nil? ? default : value)
@@ -122,11 +120,11 @@ module ExtendIt
       end
 
       def dsl_block(*names, variable: nil)
-        names = names.ensure_symbols
+        names = names.ensure_array(:flatten, :compact, :uniq)
         variable = nil if names.size != 1
-        variable = variable.ensure_local_name unless variable.nil?
+        variable = variable.ensure_symbol(name_of: :local)
         names.each do |name|
-          name = name.ensure_local_name || next
+          name = name.ensure_symbol(name_of: :getter) || next
           define_method name do |&block|
             return if block.nil?
             dsl_set(variable || name, block)
@@ -135,19 +133,16 @@ module ExtendIt
       end
 
       def dsl_use_hash(hash_name, variable: nil)
-        hash_name = hash_name.ensure_local_name || fail(
-          ArgumentError,
-          '`hash_name` argument for `dsl_use_hash` should be a Symbol ' \
-          'or a String'
-        )
-        variable = variable.ensure_local_name unless variable.nil?
+        hash_name = hash_name.ensure_symbol!(name_of: :local)
+        variable = variable.ensure_symbol(name_of: :local)
 
         define_method "use_#{hash_name}" do |*names, except: nil|
           hash = dsl_get(variable || hash_name, {})
           keys = hash.keys
-          names = Dsl.expand_asterisk(names.ensure_symbols, keys)
+          names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
+          names = Dsl.expand_asterisk(names, keys)
           names = names.empty? ? keys : names & keys
-          names -= except.ensure_symbols
+          names -= except.ensure_array(:flatten, :ensure_symbol, :compact, make: true)
           hash.replace(Hash[names.map { |n| [n, hash[n]] }])
         end
       end
@@ -159,19 +154,11 @@ module ExtendIt
             '`dsl_hash_of_objects` requires creator block to be present'
           )
         end
-        hash_name = hash_name.ensure_local_name || fail(
-          ArgumentError,
-          '`hash_name` argument for `dsl_hash_of_objects` should be' \
-          ' a Symbol or a String'
-        )
-        variable = variable.ensure_local_name unless variable.nil?
+        hash_name = hash_name.ensure_symbol!(name_of: :local)
+        variable = variable.ensure_symbol(name_of: :local)
 
         unless single.nil?
-          single = single.ensure_local_name || fail(
-            ArgumentError,
-            '`single` option for `dsl_hash_of_objects` should be' \
-            ' a Symbol or a String or nil'
-          )
+          single = single.ensure_symbol!(name_of: :local)
           define_method single do |name, **opts, &block|
             name = name.ensure_symbol
             unless name.nil?
@@ -185,7 +172,8 @@ module ExtendIt
 
         define_method hash_name do |*names, **opts, &block|
           hash = dsl_get(variable || hash_name, {})
-          Dsl.expand_asterisk(names.ensure_symbols, hash.keys).each do |name|
+          names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
+          Dsl.expand_asterisk(names, hash.keys).each do |name|
             obj = hash[name] ||=
                   dsl_receiver.instance_exec(name, **opts, &creator)
             obj.dsl_eval(&block) if !block.nil? && obj.is_a?(Dsl)
@@ -204,14 +192,15 @@ module ExtendIt
     end
   end
 
+  #
   module DslModule
     def self.incuded(base)
-      fail RuntimeError, 'DslModule can be only extended by other modules'
+      fail 'DslModule can be only extended by other modules'
     end
 
     def self.extended(base)
       unless base.is_a?(Module)
-        fail RuntimeError, 'DslModule can be only extended by modules'
+        fail 'DslModule can be only extended by modules'
       end
 
       base.define_singleton_method :included do |superbase|

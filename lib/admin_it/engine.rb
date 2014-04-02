@@ -1,11 +1,14 @@
+#
 module AdminIt
+  #
   class Engine < Rails::Engine
 #    paths['app/controllers'] = File.join('lib', 'admin_it', 'controllers')
 
     config.to_prepare do
       Rails.application.config.i18n.load_path +=
         Dir[Engine.root.join('lib', 'admin_it', 'locales', '*.yml')]
-      unless File.basename($0) == "rake" && ARGV.include?("db:migrate")
+      unless File.basename($PROGRAM_NAME) == 'rake' &&
+             ARGV.include?('db:migrate')
         Dir[File.join(AdminIt.config.root, '**', '*.rb')].each do |file|
           require file
         end

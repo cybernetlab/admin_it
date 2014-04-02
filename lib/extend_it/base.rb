@@ -1,8 +1,7 @@
-require File.join %w(extend_it ensures)
-
 module ExtendIt
+  #
   module Base
-    using ExtendIt::Ensures if ExtendIt.config.use_refines?
+    using EnsureIt if ENSURE_IT_REFINED
 
     def self.extended(base)
       base.instance_eval do
@@ -22,7 +21,8 @@ module ExtendIt
     end
 
     def attr_checker(*names)
-      names.ensure_symbols.each do |name|
+      names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
+      names.each do |name|
         define_method "#{name}?" do
           instance_variable_get("@#{name}") == true
         end
@@ -36,7 +36,8 @@ module ExtendIt
     end
 
     def inherited_class_reader(*names)
-      names.ensure_symbols.each do |name|
+      names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
+      names.each do |name|
         var = "@#{name}"
         define_singleton_method(name) do
           p = parents.find { |parent| parent.instance_variable_defined?(var) }
@@ -46,10 +47,10 @@ module ExtendIt
     end
 
     def class_attr_reader(*attrs)
-      attrs.ensure_symbols.each do |attr_name|
-        attr_name.ensure_local_name || next
+      attrs.ensure_array(:flatten).each do |attr_name|
+        attr_name.ensure_symbol(name_of: :local) || next
         next if instance_methods.include?(attr_name)
-        var_name = attr_name.ensure_instance_variable_name
+        var_name = attr_name.ensure_symbol(name_of: :instance_variable)
         if methods.include?(attr_name)
           define_method(attr_name) { self.class.send(attr_name) }
         else

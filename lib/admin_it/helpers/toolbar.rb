@@ -1,5 +1,7 @@
 module AdminIt
+  #
   module Helpers
+    #
     class ToolbarItem < WrapIt::Link
       attr_accessor :icon, :add_class, :add_data
       option :icon
@@ -20,11 +22,13 @@ module AdminIt
       end
     end
 
+    #
     class ToolbarButtons < WrapIt::Container
       html_class 'btn-group'
       child :button, ToolbarItem, class: 'btn navbar-btn'
     end
 
+    #
     class Toolbar < WrapIt::Container
       default_tag 'nav'
       html_class 'navbar'

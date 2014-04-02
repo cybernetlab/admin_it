@@ -4,7 +4,10 @@ require File.join %w(extend_it base)
 require File.join %w(extend_it dsl)
 require File.join %w(extend_it callbacks)
 
+#
 module AdminIt
+  using EnsureIt if EnsureIt.refined?
+  #
   class Filter
     extend ExtendIt::Base
     extend ExtendIt::Dsl
@@ -43,11 +46,7 @@ module AdminIt
       protected
 
       def create_class(name, _resource)
-        name = name.ensure_symbol || fail(
-          ArgumentError,
-          '`name` argument for `Filter::create_class` should be a Symbol' \
-          ' or a String'
-        )
+        name = name.ensure_symbol!
         base = self
         Class.new(base) do
           @filter_name, @resource = name, _resource
@@ -142,8 +141,8 @@ module AdminIt
       (?:\d*\.\d+(?:[eE][+\-]?\d+)?)|
       (?:\d+(?:\.\d*)?[eE][+\-]?\d+)
     \z/x
-    DATE = %q{[0-3]?[0-9][\/.\-][0-3]?[0-9][\/.\-](?:[0-9]{2})?[0-9]{2}}
-    TIME = %q{[0-2]?[0-9][.:\-][0-5]?[0-9]}
+    DATE = %q([0-3]?[0-9][\/.\-][0-3]?[0-9][\/.\-](?:[0-9]{2})?[0-9]{2})
+    TIME = %q([0-2]?[0-9][.:\-][0-5]?[0-9])
     DATE_REGEXP = /\A#{DATE}\z/
     TIME_REGEXP = /\A#{TIME}\z/
     DATETIME_REGEXP = /\A#{DATE}(?:\s+|[\/.\-])#{TIME}\z/
@@ -207,18 +206,14 @@ module AdminIt
     end
   end
 
+  #
   module FiltersHolder
     extend ExtendIt::DslModule
 
     dsl do
       dsl_hash_of_objects :filters, single: :filter do |name, **opts|
         filter_class = opts[:class] || opts[:filter_class] || Filter
-        unless filter_class.is_a?(Class) && filter_class <= Filter
-          fail(
-            ArgumentError,
-            'filter class should be AdminIt::Filter descendant'
-          )
-        end
+        filter_class.ensure_class!(Filter)
         filter_class.create(name, entity_class)
       end
     end

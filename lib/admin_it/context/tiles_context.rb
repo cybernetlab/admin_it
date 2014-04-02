@@ -1,4 +1,5 @@
 module AdminIt
+  #
   class TilesContext < CollectionContext
     dsl do
       dsl_accessor :header do |value|

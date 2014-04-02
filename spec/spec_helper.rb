@@ -1,11 +1,16 @@
 require 'rubygems'
 require 'bundler/setup'
 
+# --- EnsureIt
+if ENV['USE_REFINES']
+  require 'ensure_it_refined'
+else
+  require 'ensure_it'
+end
+# --- EOF EnsureIt
+
 # --- ExtendIt
 require 'extend_it'
-if ENV['USE_REFINES']
-  ExtendIt.config.use_refines(true)
-end
 # --- EOF ExtendIt
 
 require 'combustion'

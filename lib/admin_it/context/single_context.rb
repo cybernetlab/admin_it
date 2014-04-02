@@ -1,4 +1,8 @@
+#
 module AdminIt
+  using EnsureIt if EnsureIt.refined?
+
+  #
   class Section
     extend ExtendIt::Base
     include ExtendIt::Dsl
@@ -11,16 +15,17 @@ module AdminIt
       dsl_boolean :visible
 
       def use_fields(*names, except: nil)
-        names = names.ensure_symbols
+        names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
+        except = except.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
         fields =
-          if names.nil? || names.empty?
+          if names.empty?
             dsl_get(:fields, default: [])
           else
             context = dsl_get(:context, default: nil)
             names & context.fields.map(&:field_name)
           end
-        fields -= except.ensure_symbols unless except.nil?
-        dsl_set(:fields, fields.uniq)
+        fields -= except
+        dsl_set(:fields, fields)
       end
     end
 
@@ -40,6 +45,7 @@ module AdminIt
     end
   end
 
+  #
   module Identifiable
     def self.included(base)
       base.extend(ClassMethods)
@@ -53,10 +59,12 @@ module AdminIt
       identity.nil? ? super : "#{super}(#{identity})"
     end
 
+    #
     module ClassMethods
     end
   end
 
+  #
   class SingleContext < Context
     dsl do
       dsl_block :entity_getter, :entity_saver, :entity_destroyer
@@ -64,7 +72,7 @@ module AdminIt
       dsl_hash_of_objects :sections, single: :section do |name, **opts|
         if @sections.empty?
           # TODO: require this and other files after I18n config in engine.rb
-          #general.display_name(I18n.t('admin_it.collection.no_data'))
+          # general.display_name(I18n.t('admin_it.collection.no_data'))
           general = Section.new(
             :general,
             self,
@@ -91,7 +99,8 @@ module AdminIt
       )
     end
 
-    class_attr_reader :entity_getter, :entity_saver, :entity_destroyer, :sections
+    class_attr_reader :entity_getter, :entity_saver, :entity_destroyer,
+                      :sections
     attr_accessor :entity
 
     after_load do |store: {}, params: {}|
@@ -117,8 +126,7 @@ module AdminIt
     end
 
     def section=(value)
-      value = value.downcase.to_sym if value.is_a?(String)
-      return unless value.is_a?(Symbol)
+      value = value.ensure_symbol(downcase: true) || return
       if sections.empty?
         return if section != :none
       else
@@ -153,6 +161,7 @@ module AdminIt
     end
   end
 
+  #
   class SavableSingleContext < SingleContext
     def self.save_action; end
 
@@ -177,6 +186,7 @@ module AdminIt
     def do_save_entity; end
   end
 
+  #
   class EditContext < SavableSingleContext
     include Identifiable
 
@@ -203,6 +213,7 @@ module AdminIt
     end
   end
 
+  #
   class NewContext < SavableSingleContext
     def self.path
       AdminIt::Engine.routes.url_helpers.send("new_#{resource.name}_path")

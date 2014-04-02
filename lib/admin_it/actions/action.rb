@@ -1,4 +1,8 @@
+#
 module AdminIt
+  using EnsureIt if EnsureIt.refined?
+
+  #
   class Action
     extend ExtendIt::Base
     include ExtendIt::Dsl
@@ -12,8 +16,7 @@ module AdminIt
     attr_reader :layout
 
     def layout=(value)
-      value = value.ensure_symbol
-      @layout = value.nil? || LAYOUTS.include?(value) ? value : nil
+      @layout = value.ensure_symbol(values: LAYOUTS)
     end
   end
 end

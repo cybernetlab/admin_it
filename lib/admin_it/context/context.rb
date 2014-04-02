@@ -3,9 +3,11 @@ require File.join %w(extend_it dsl)
 require File.join %w(extend_it base)
 require File.join %w(extend_it callbacks)
 
-using ExtendIt::Ensures
-
+#
 module AdminIt
+  using EnsureIt if EnsureIt.refined?
+
+  #
   class Context
     extend ExtendIt::Base
     extend ExtendIt::Dsl
@@ -27,7 +29,7 @@ module AdminIt
     define_callbacks :initialize, :load, :save
 
     def self.create(context_name, _resource)
-      fail ArgumentError, 'Wrong resource' unless _resource.is_a?(Resource)
+      _resource.ensure_instance_of!(Resource)
       base = self
       Class.new(base) do
         @resource = _resource
@@ -101,9 +103,7 @@ module AdminIt
           store = store[name] ||= {}
         end
 
-        if params.nil?
-          params = controller.request.query_parameters
-        end
+        params = controller.request.query_parameters if params.nil?
         params = Hash[params.map { |k, v| [k.to_sym, v] }]
 
         run_callbacks :load, arguments: { params: params, store: store } do
@@ -158,10 +158,11 @@ module AdminIt
     def layout=(value)
       value = value.to_sym if value.is_a?(String)
       return unless value.is_a?(Symbol)
-      @layout = case value
-      when :dialog then 'dialog'
-      else ''
-      end
+      @layout =
+        case value
+        when :dialog then 'dialog'
+        else ''
+        end
     end
 
     def parent=(value)
@@ -196,9 +197,7 @@ module AdminIt
     end
 
     def url_params(**params)
-      unless @parent.nil?
-        params.merge!(parent: @parent.send(:context_param))
-      end
+      params.merge!(parent: @parent.send(:context_param)) unless @parent.nil?
       params
     end
 

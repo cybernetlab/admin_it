@@ -1,10 +1,12 @@
 module AdminIt
   module ObjectData
+    #
     module Context
       def self.included(base)
         base.extend(ClassMethods)
       end
 
+      #
       module ClassMethods
         def load_fields
           all = entity_class.instance_methods(false) - Object.instance_methods
@@ -36,6 +38,7 @@ module AdminIt
       end
     end
 
+    #
     module Field
       protected
 

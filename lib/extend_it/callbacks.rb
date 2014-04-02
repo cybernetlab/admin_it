@@ -1,35 +1,33 @@
-require File.join %w(extend_it ensures)
 require File.join %w(extend_it base)
 
 module ExtendIt
+  #
   module Callbacks
-    using ExtendIt::Ensures if ExtendIt.config.use_refines?
+    using EnsureIt if EnsureIt.refined?
 
     CALLBACKS = %i(before after around)
 
     def self.included(base)
-      unless base.is_a?(Class)
-        fail RuntimeError, 'Can be included in classes only'
-      end
+      fail 'Can be included in classes only' unless base.is_a?(Class)
       unless (class << base; self end).included_modules.include?(Base)
-        fail RuntimeError, "#{base.name} should extend ExtendIt::Base"
+        fail "#{base.name} should extend ExtendIt::Base"
       end
       base.extend(ClassMethods)
     end
 
     def self.extended(base)
-      fail RuntimeError, 'This module can\'t be extended'
+      fail 'This module can\'t be extended'
     end
 
     def run_callbacks(*names, arguments: [], original_context: false)
       # sanitize arguments
-      arguments = [] if arguments.nil?
-      arguments = [arguments] unless arguments.is_a?(Array)
+      arguments = arguments.ensure_array(make: true)
 
       parents = self.class.parents
       parents_rev = parents.reverse
 
-      names.ensure_symbols.each do |name|
+      names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
+      names.each do |name|
         around = []
         around_name = "@around_#{name}".to_sym
         var_name = "@before_#{name}".to_sym
@@ -78,12 +76,13 @@ module ExtendIt
       end
     end
 
+    #
     module ClassMethods
       def define_callbacks(*names, callbacks: [:before, :after])
         callbacks = [:before, :after] unless callbacks.is_a?(Array)
-        callbacks.select! { |cb| CALLBACKS.include?(cb) }
+        callbacks = callbacks.ensure_array(values: CALLBACKS)
+        names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
         names.each do |name|
-          name = name.ensure_symbol || next
           callbacks.each do |cb|
             cb_name = "#{cb}_#{name}".to_sym
             var_name = "@#{cb_name}".to_sym

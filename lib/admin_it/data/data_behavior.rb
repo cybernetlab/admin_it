@@ -1,4 +1,5 @@
 module AdminIt
+  #
   module DataBehavior
     private
 
@@ -11,6 +12,7 @@ module AdminIt
           import_module = @data_module.const_get(mod.name.split('::').last)
           include(import_module) if import_module.is_a?(Module)
         rescue NameError
+          nil
         end
       end
     end
