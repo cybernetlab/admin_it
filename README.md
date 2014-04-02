@@ -27,10 +27,8 @@ bundle install
 
 # Todo
 
-* use_fields not working in root resource context
 * human-readable date and time fields
 * Test coverage
-* Entities editing/creating
 
 ## Longtime plans
 
