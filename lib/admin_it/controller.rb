@@ -4,6 +4,7 @@ module AdminIt
     def self.included(base)
       base.class_eval do
         include Pundit if AdminIt::Env.pundit?
+        before_filter :authenticate_user!
 
         attr_reader :context
         helper_method :context, :resource

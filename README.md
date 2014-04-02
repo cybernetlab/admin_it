@@ -36,8 +36,9 @@ bundle install
 
 # Changes
 
-`1.0.12`
+`1.1.0`
 * ensure_it integration
+* mongoid integration
 
 `1.0.10`
 

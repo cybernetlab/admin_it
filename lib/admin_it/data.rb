@@ -1,7 +1,6 @@
 require File.join %w(admin_it data data_behavior)
 require File.join %w(admin_it data object)
 require File.join %w(admin_it data hash)
-require File.join %w(admin_it data active_record)
 
 #
 module AdminIt
@@ -21,5 +20,7 @@ module AdminIt
 
   register_data Object, AdminIt::ObjectData
   register_data Hash, AdminIt::HashData
-  register_data ActiveRecord::Base, AdminIt::ActiveRecordData
 end
+
+require File.join %w(admin_it data active_record)
+require File.join %w(admin_it data mongoid)

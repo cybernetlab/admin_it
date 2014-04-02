@@ -19,7 +19,7 @@ module AdminIt
     include ExtendIt::Callbacks
 
     TYPES = %i(unknown integer float string date datetime time relation enum
-               binary)
+               array hash range regexp symbol binary)
 
     define_callbacks :initialize
 

@@ -18,10 +18,29 @@ module AdminIt
 
     # @private
     def self.pundit?
+      return @pundit unless @pundit.nil?
       Gem::Specification.find_by_name('pundit')
-      true
+      @pundit = true
     rescue Gem::LoadError
-      false
+      @pundit = false
+    end
+
+    # @private
+    def self.active_record?
+      return @active_record unless @active_record.nil?
+      Gem::Specification.find_by_name('activerecord')
+      @active_record = true
+    rescue Gem::LoadError
+      @active_record = false
+    end
+
+    # @private
+    def self.mongoid?
+      return @mongoid unless @mongoid.nil?
+      Gem::Specification.find_by_name('mongoid')
+      @mongoid = true
+    rescue Gem::LoadError
+      @mongoid = false
     end
 
     # @private
