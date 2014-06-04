@@ -1,8 +1,8 @@
-div class="modal-header"
+.modal-header
   h4.modal-title = yield :title
-div class="modal-body admin-it-#{context.name}"
+.modal-body class="admin-it-#{context.name}"
   = yield
-div class="modal-footer"
-  button type="button" class="btn btn-default" data-dismiss="modal"
+.modal-footer
+  button.btn.btn-default type="button" data-dismiss="modal"
     = t('admin_it.action.close')
   = yield :buttons

@@ -25,11 +25,9 @@ module AdminIt
 
     dsl do
       dsl_accessor :type, default: TYPES[0]
-
       dsl_accessor :placeholder
-
-      dsl_boolean :readable, :writable, :visible, :sortable
-
+      dsl_accessor :partial
+      dsl_boolean :readable, :writable, :visible, :sortable, :show_label
       dsl_block :read, :write, :render, :display
 
       def hide
@@ -42,7 +40,7 @@ module AdminIt
     end
 
     class << self
-      attr_reader :read, :write, :render, :display, :type
+      attr_reader :read, :write, :render, :display, :type, :partial
 
       protected
 
@@ -67,6 +65,10 @@ module AdminIt
       @sortable.nil? ? @sortable = true : @sortable == true
     end
 
+    def self.show_label?
+      @show_label.nil? ? @show_label = true : @show_label == true
+    end
+
     inherited_class_reader :field_name, :entity_class
 
     def self.create(name, _entity_class, **opts)
@@ -78,6 +80,7 @@ module AdminIt
         @writable = opts[:writable].nil? ? true : opts[:writable] == true
         @visible = opts[:visible].nil? ? true : opts[:visible] == true
         @sortable = opts[:sortable].nil? ? true : opts[:sortable] == true
+        @show_label = opts[:show_label].nil? ? true : opts[:show_label] == true
         self.type = opts[:type]
       end
     end
@@ -90,6 +93,10 @@ module AdminIt
       @placeholder ||= display_name
     end
 
+    def self.partial
+      @partial ||= nil
+    end
+
     def self.hide
       @visible = false
     end
@@ -98,15 +105,16 @@ module AdminIt
       @visible = true
     end
 
-    class_attr_reader :entity_class, :display_name, :type
+    class_attr_reader :entity_class, :display_name, :type, :partial
     attr_writer :visible, :readable, :writable
 
-    def initialize(readable: nil, writable: nil, visible: nil, sortable: nil)
+    def initialize(readable: nil, writable: nil, visible: nil, sortable: nil, show_label: nil)
       run_callbacks :initialize do
         @readable = readable.nil? ? self.class.readable? : readable == true
         @writable = writable.nil? ? self.class.writable? : writable == true
         @visible = visible.nil? ? self.class.visible? : visible == true
         @sortable = sortable.nil? ? self.class.sortable? : sortable == true
+        @show_label = show_label.nil? ? self.class.show_label? : show_label == true
       end
     end
 
@@ -128,6 +136,10 @@ module AdminIt
 
     def sortable?
       @sortable == true
+    end
+
+    def show_label?
+      @show_label == true
     end
 
     def read(entity)
@@ -226,6 +238,8 @@ module AdminIt
       when :readable then @fields.values.select { |f| f.readable? }
       when :writable then @fields.values.select { |f| f.writable? }
       when :sortable then @fields.values.select { |f| f.sortable? }
+      when :with_labels then @fields.values.select { |f| f.show_label? }
+      when :without_labels then @fields.values.select { |f| !f.show_label? }
       when Field::TYPES then @fields.values.select { |f| f.type == scope }
       else @fields.values
       end

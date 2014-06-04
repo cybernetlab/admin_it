@@ -6,6 +6,10 @@ module AdminIt
 
     dsl { dsl_block :render }
 
+    def renderable?
+      !@render.nil?
+    end
+
     def render(entity, instance = nil, &block)
       return if @render.nil?
       # method used as event emmiter, call block in instance or caller
@@ -31,6 +35,10 @@ module AdminIt
 
     def icon
       @icon ||= default_icon
+    end
+
+    def icon?
+      !@icon.nil? && !icon.empty?
     end
 
     protected

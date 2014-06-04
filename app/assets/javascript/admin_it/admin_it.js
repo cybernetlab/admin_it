@@ -12,8 +12,8 @@ var prepareHeaders = function(hash) {
 
 var initPartials = function() {
   $('[data-toggle="partial"][data-target]').on('click', function(evt) {
-    data = $(this).data();
-    href = data.remote || $(this).attr('href');
+    var data = $(this).data();
+    var href = data.remote || $(this).attr('href');
     if (href) {
       var options = {
         dataType: 'html',
@@ -25,6 +25,16 @@ var initPartials = function() {
       evt.preventDefault();
     }
   });
+}
+
+var initDialogs = function() {
+/*  $('[data-toggle="dialog"]').on('click', function(evt) {
+    var data = $(this).data();
+    evt.preventDefault();
+    if (data.target) {
+      $(data.target).modal('show');
+    } else if ($(this).attr('href'))
+  });*/
 }
 
 var initTiles = function() {
@@ -72,6 +82,7 @@ var initLinks = function() {
 
 $(document).on('ready page:load', function() {
   initPartials();
+  // initDialogs();
   initTiles();
   initTabs();
   initPopups();

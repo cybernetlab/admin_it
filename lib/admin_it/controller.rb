@@ -37,6 +37,7 @@ module AdminIt
         if layout == 'admin_it' && !request.query_parameters.empty?
           redirect_to request.path
         else
+          Request.get(request).process!
           render template: "admin_it/#{context.name}", layout: layout
         end
       end

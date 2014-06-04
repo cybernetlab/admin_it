@@ -3,10 +3,11 @@ module AdminIt
   module Helpers
     #
     class ToolbarItem < WrapIt::Link
-      attr_accessor :icon, :add_class, :add_data
+      attr_accessor :icon, :dialog, :add_class, :add_data
       option :icon
       option :add_class
       option :add_data
+      option :dialog
       section :icon
       place :icon, before: :body
 
@@ -15,7 +16,12 @@ module AdminIt
           self[:icon] << html_safe("<i class=\"fa fa-#{icon}\"></i> ")
         end
         html_class << add_class
-        html_data.merge!(add_data) if add_data.is_a?(Hash)
+        data = add_data.is_a?(Hash) ? add_data : {}
+        unless dialog.nil? || dialog.empty?
+          data[:toggle] = 'modal'
+          data[:target] = dialog
+        end
+        html_data.merge!(data)
 #        options = { tag: 'li' }
 #        options[:class] = 'active' if resource == @template.resource
 #        wrap(options)

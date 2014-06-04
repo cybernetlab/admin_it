@@ -36,6 +36,10 @@ bundle install
 
 # Changes
 
+`1.2.0`
+* added: partials for fields
+* updated: FontAwesome to `4.1.0`
+
 `1.1.0`
 * ensure_it integration
 * mongoid integration

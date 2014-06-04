@@ -1,18 +1,14 @@
 - for_context ||= context
 
 - if for_context.pages > 1
-  div class="text-center"
-    ul class="pagination"
+  .text-center
+    ul.pagination
       - if for_context.page == 1
-        li.disabled: a href="#"
-          i class="fa fa-angle-double-left"
-        li.disabled: a href="#"
-          i class="fa fa-angle-left"
+        li.disabled: a href="#": i.fa.fa-angle-double-left
+        li.disabled: a href="#": i.fa.fa-angle-left
       - else
-        li: a href="#{url_for(page: 'first')}"
-          i class="fa fa-angle-double-left"
-        li: a href="#{url_for(page: 'prev')}"
-          i class="fa fa-angle-left"
+        li: a href="#{url_for(page: 'first')}": i.fa.fa-angle-double-left
+        li: a href="#{url_for(page: 'prev')}": i.fa.fa-angle-left
       - start = 1
       - if for_context.pages > 10
         - start = for_context.page - 5 if for_context.page > 5
@@ -30,12 +26,8 @@
            for_context.page < for_context.pages - 5
         li.disabled: a href="#" ...
       - if for_context.page == for_context.pages
-        li.disabled: a href="#"
-          i class="fa fa-angle-right"
-        li.disabled: a href="#"
-          i class="fa fa-angle-double-right"
+        li.disabled: a href="#": i.fa.fa-angle-right
+        li.disabled: a href="#": i.fa.fa-angle-double-right
       - else
-        li: a href="#{url_for(page: 'next')}"
-          i class="fa fa-angle-right"
-        li: a href="#{url_for(page: 'last')}"
-          i class="fa fa-angle-double-right"
+        li: a href="#{url_for(page: 'next')}": i.fa.fa-angle-right
+        li: a href="#{url_for(page: 'last')}": i.fa.fa-angle-double-right

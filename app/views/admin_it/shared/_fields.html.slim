@@ -1,19 +1,38 @@
 - for_context ||= context
 
 - fields.each do |field|
+  /- next if field == parent_field
   - name = "#{for_context.resource.name}[#{field.name}]"
   - id = "#{for_context.resource.name}_#{field.name}"
   - if field.visible?
-    div class="form-group"
-      label for="#{id}" class="col-sm-2 control-label"
-        = field.display_name
-      div class="col-sm-10"
-        input(
-          type="text"
-          class="form-control"
-          id==id
-          name==name
-          value==field.read(for_context.entity)
-        )
+    - if field.partial.nil?
+      .form-group
+        - control_width = 'col-sm-12'
+        - if field.show_label?
+          label.col-sm-2.control-label for="#{id}"
+            = field.display_name
+            - control_width = 'col-sm-10'
+        div class=control_width
+          input(
+            type="text"
+            class="form-control"
+            id=id
+            name=name
+            value=field.read(for_context.entity)
+          )
+    - else
+      = render partial: field.partial, \
+               locals: { field: field, entity: for_context.entity }
   - else
-    input type="hidden" name==name id==id value==field.read(for_context.entity)
+    input type="hidden" name=name id=id value=field.read(for_context.entity)
+
+- if for_context.child?
+  - parent_name = "#{for_context.parent.resource.name}_id"
+  - parent_field = for_context.field(parent_name)
+  - if parent_field
+    input(
+      name=parent_name
+      value=parent_field.read(for_context.entity)
+      type="hidden"
+    )
+

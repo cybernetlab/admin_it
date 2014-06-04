@@ -7,6 +7,14 @@ require File.join %w(extend_it callbacks)
 module AdminIt
   using EnsureIt if EnsureIt.refined?
 
+  class Partial
+    attr_reader :name, :locals
+    def initialize(name, **locals)
+      @name = name
+      @locals = locals
+    end
+  end
+
   #
   class Context
     extend ExtendIt::Base
@@ -66,6 +74,9 @@ module AdminIt
     def self.url(context = nil, **params)
       url = context.nil? ? path : context.path
       params = context.nil? ? params : context.url_params(**params)
+      if params.key?(:parent) && params[:parent].is_a?(Context)
+        params[:parent] = params[:parent].send(:context_param)
+      end
       unless params.empty?
         url << '?' << params.map { |k, v| "#{k}=#{v}" }.join('&')
         url = URI.escape(url)
@@ -84,12 +95,17 @@ module AdminIt
     \z/x
 
     def initialize(from, params: nil, store: nil, parent_init: false)
+      @children = []
+
       run_callbacks :initialize do
         if from.is_a?(self.class.controller_class)
           @controller = from
         elsif from.is_a?(Context)
           @controller = from.controller
-          self.parent = from unless parent_init == true
+          unless parent_init == true
+            self.parent = from
+            from.instance_variable_get(:@children) << self
+          end
           params ||= {}
           store ||= {}
         end
@@ -193,7 +209,20 @@ module AdminIt
     def begin_render(template)
       @template = template
       @toolbar = Helpers::Toolbar.new(template)
-      @top_menu = Helpers::TopMenu.new(template, class: 'navbar-nav')
+      unless child?
+        @top_menu = Helpers::TopMenu.new(template, class: 'navbar-nav')
+      end
+    end
+
+    def end_render(template)
+      request = AdminIt::Request.get(controller.request)
+      request["admin_it_#{resource.name}_toolbar"] = template.capture do
+        @toolbar.render
+      end
+      unless child?
+        request['admin_it_top_menu'] = template.capture { @top_menu.render }
+#        @children.each { |c| c.end_render(template) }
+      end
     end
 
     def url_params(**params)
@@ -204,6 +233,10 @@ module AdminIt
     def url_for(*args, **params)
       return nil if @template.nil?
       @template.url_for(*args, url_params(**params))
+    end
+
+    def partial(name, **locals)
+      Partial.new(name, **locals)
     end
 
     protected

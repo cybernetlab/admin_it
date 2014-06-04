@@ -1,15 +1,26 @@
 - for_context ||= context
-- for_context.toolbar.button( \
-    "#{t('admin_it.action.create')} #{child.resource.display_name}", \
-    icon: 'plus-circle', \
-    link: child.resource[:new].url(child.url_params(layout: :dialog)), \
-    add_class: 'btn-success', \
-    add_data: { tab: '#properties', toggle: 'modal', target: '#child_modal' } \
-  )
 
-= render partial: File.join(%W(admin_it context #{child.name})), \
-         locals: { for_context: child }
+- child.begin_render(self)
 
-div class="modal fade" id="child_modal"
-  div class="modal-dialog"
-    div class="modal-content"
+.container class="admin-it-#{context.name}"
+  = render partial: File.join(%w(admin_it shared toolbar)),
+           locals: { for_context: child }
+  = render partial: File.join(%w(admin_it shared filters)),
+           locals: { for_context: child }
+  = render partial: File.join(%W(admin_it context #{child.name})), \
+           locals: { for_context: child }
+
+/- unless child.resource[:new].nil?
+  - for_context.toolbar.button( \
+      "#{t('admin_it.action.create')} #{child.resource.display_name}", \
+      icon: 'plus-circle', \
+      link: child.resource[:new].url(child.url_params(layout: :dialog)), \
+      add_class: 'btn-success', \
+      add_data: { tab: '#properties', toggle: 'modal', target: '#child_modal' } \
+    )
+
+.modal.fade#child_modal
+  .modal-dialog.modal-lg
+    .modal-content
+
+- child.end_render(self)

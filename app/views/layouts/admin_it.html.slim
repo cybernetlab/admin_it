@@ -18,20 +18,18 @@ html
     = javascript_include_tag 'admin_it/bootstrap.min', \
                              'data-turbolinks-track' => true
     = javascript_include_tag 'admin_it/admin_it'
+    = yield :head
 
-  - html = capture do
-    body style="padding-top: 70px"
-      nav class="navbar navbar-fixed-top navbar-inverse" role="navigation"
-        div class="container"
-          <!-- top-menu -->
+  body style="padding-top: 70px"
+    nav.navbar.navbar-fixed-top.navbar-inverse role="navigation"
+      .container
+        <!-- admin_it_top_menu -->
 
-      div class="container admin-it-#{context.name}"
-        = render File.join(%w(admin_it shared toolbar))
-        = render File.join(%w(admin_it shared filters))
-        = yield
+    .container class="admin-it-#{context.name}"
+      = render File.join(%w(admin_it shared toolbar))
+      = render File.join(%w(admin_it shared filters))
+      = yield
 
-  - top_menu_html = capture { context.top_menu.render }
-  - toolbar_html = capture { context.toolbar.render }
-  = html.gsub('<!-- top-menu -->', top_menu_html) \
-        .gsub('<!-- toolbar -->', toolbar_html) \
-        .html_safe
+    = yield :footer
+
+  - context.end_render(self)

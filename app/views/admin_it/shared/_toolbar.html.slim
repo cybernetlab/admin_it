@@ -1,15 +1,22 @@
 - for_context ||= context
 
-<!-- toolbar -->
+/! admin_it_#{for_context.resource.name}_toolbar
 - if for_context.collection?
   - new_context = for_context.resource.contexts.find do |c|
     - c <= AdminIt::NewContext
+
+  / add button
   - unless new_context.nil?
-    = for_context.toolbar.button t('admin_it.action.create'), \
-                                 add_class: 'btn-success', \
-                                 link: new_context.path, \
-                                 icon: 'plus'
-  - if resource.collections.size > 1
+    - opts = { add_class: 'btn-success', icon: 'plus' }
+    - if for_context.child?
+      - opts[:dialog] = '#child_modal'
+      - opts[:link] = new_context.url(parent: for_context.parent, layout: :dialog)
+    - else
+      - opts[:link] = new_context.url
+    = for_context.toolbar.button t('admin_it.action.create'), opts
+
+  / collection context select
+  - if resource.collections.size > 1 && !for_context.child?
     - for_context.toolbar.buttons(class: 'pull-right') do |buttons|
       - resource.collections.each do |collection|
         - btn_class = ['btn-default']
@@ -18,14 +25,15 @@
                          link: collection.path, \
                          icon: collection.icon
 
-  - unless for_context.all_filters.empty?
+  / filters
+  - unless for_context.all_filters.empty? || for_context.child?
     - for_context.toolbar.buttons(class: 'pull-right admin-it-filters') do |buttons|
       = buttons.button add_class: 'btn-info dropdown-toggle', \
                        add_data: { toggle: 'dropdown' }, \
                        link: '#', icon: 'filter' do |button|
-        = t('admin_it.filters') + ' '
-        span class="caret"
-      ul class="dropdown-menu" role="menu"
+        = t('admin_it.filters')
+        span.caret<
+      ul.dropdown-menu role="menu"
         - for_context.all_filters.each do |filter|
-          li: a href==for_context.url_for(filters: filter.filter_name)
+          li: a href=for_context.url_for(filters: filter.filter_name)
             = filter.display_name

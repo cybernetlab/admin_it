@@ -7,6 +7,7 @@ module AdminIt
     extend ExtendIt::Base
     include ExtendIt::Dsl
     include Renderable
+    include Iconed
 
     attr_reader :name, :display_name, :fields
 
@@ -217,6 +218,10 @@ module AdminIt
   class NewContext < SavableSingleContext
     def self.path
       AdminIt::Engine.routes.url_helpers.send("new_#{resource.name}_path")
+    end
+
+    def path(_entity: nil)
+      self.class.path
     end
 
     def self.save_action

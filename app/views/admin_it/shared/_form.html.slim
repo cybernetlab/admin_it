@@ -5,46 +5,47 @@
 - elsif for_context.is_a?(AdminIt::EditContext)
   - action = for_context.resource.single_path(for_context.entity)
 
-form(
-  class="form-horizontal"
-  role="form"
-  action==action
-  method="POST"
-)
+form.form-horizontal role="form" action=action method="POST"
   input name="authenticity_token" type="hidden" value==form_authenticity_token
   - if for_context.is_a?(AdminIt::EditContext)
     input name="_method" type="hidden" value="patch"
 
-  - if for_context.child?
-    input name="redirect" type="hidden" value="test"
-
   - if for_context.sections.size > 0
-    ul class="nav nav-tabs"
+    ul.nav.nav-tabs
       - for_context.sections.each do |section|
         li class="#{section.name == for_context.section ? 'active' : ''}"
           a href="##{section.name}" data-toggle="tab"
+            - if section.icon?
+              i.fa> class="fa-#{section.icon}"
             = section.display_name
-    div class="tab-content"
+    .tab-content
       - for_context.sections.each do |section|
-        div class="tab-pane #{section.name == for_context.section ? 'active' : ''}" id==section.name
-          - if section.fields.size > 0
+        .tab-pane class="#{section.name == for_context.section ? 'active' : ''}" id==section.name
+          - if !section.renderable?
             - fields = for_context.fields.select do |f|
               - section.fields.include?(f.name)
             = render partial: File.join(%w(admin_it shared fields)), \
                      locals: { fields: fields }
           - else
-            - c = section.render(for_context.entity, for_context)
-            - if c.is_a?(AdminIt::Context)
-              = render partial: File.join(%W(admin_it shared child)), \
-                       locals: { for_context: for_context, child: c }
+            - rendered = section.render(for_context.entity, for_context)
+            - rendered = [rendered] unless rendered.is_a?(Array)
+            - rendered.each do |item|
+              - if item.is_a?(AdminIt::Context)
+                = render partial: File.join(%W(admin_it shared child)), \
+                         locals: { for_context: for_context, child: item }
+              - elsif item.is_a?(AdminIt::Partial)
+                - locals = item.locals.merge(for_context: for_context)
+                = render partial: item.name, locals: locals
+              - elsif item.is_a?(String)
+                == item
   - else
     = render partial: File.join(%w(admin_it shared fields)), \
              locals: { fields: for_context.fields(scope: :all) }
 
   - content_for :buttons do
-    button class="btn btn-primary" = t('admin_it.action.save')
+    button.btn.btn-primary = t('admin_it.action.save')
 
   - if for_context.layout.empty?
-    div class="form-group"
-      div class="col-sm-10 col-sm-offset-2"
+    .form-group
+      .col-sm-10.col-sm-offset-2
         = yield :buttons

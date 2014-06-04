@@ -19,6 +19,8 @@ module AdminIt
         prepend_view_path 'lib/views'
       end
     end
+
+    config.app_middleware.insert_after(Rack::ETag, Middleware)
   end
 
   def self.config

@@ -1,23 +1,26 @@
 - for_context ||= context
 
-- for_context.entities.each_with_index do |record, index|
-  div class="col-md-3"
-    div class="thumbnail admin-tile"
-      - actions = resource.singles.select { |c| !(c <= AdminIt::NewContext) }
-      - if actions.size > 0
-        div class="btn-group-vertical btn-group-sm pull-right admin-tile-actions fade"
-          - actions.each do |_context|
-            a(
-              class="btn #{_context <= AdminIt::ShowContext ? 'btn-info' : 'btn-default'}"
-              href==_context.path(for_context.entity)
-            )
-              i class="fa fa-#{_context.icon}"
-      = field for_context.field(for_context.header), tag: 'h4'
-      - for_context.fields.each do |f|
-        - next if f.name == for_context.header
-        - next if f.type == :relation
-        p
-          strong = f.display_name + ': '
-          = field f, tag: 'span'
-  - if index > 0 && (index + 1) % 4 == 0
-    div class="clearfix"
+- if for_context.count == 0
+  h2: small = t 'admin_it.collection.no_data'
+- else
+  - for_context.entities.each_with_index do |record, index|
+    .col-md-3
+      .thumbnail.admin-tile
+        - actions = resource.singles.select { |c| !(c <= AdminIt::NewContext) }
+        - if actions.size > 0
+          .btn-group-vertical.btn-group-sm.pull-right.admin-tile-actions.fade
+            - actions.each do |_context|
+              a(
+                class="btn #{_context <= AdminIt::ShowContext ? 'btn-info' : 'btn-default'}"
+                href=_context.path(for_context.entity)
+              )
+                i.fa class="fa-#{_context.icon}"
+        = field for_context.field(for_context.header), tag: 'h4'
+        - for_context.fields.each do |f|
+          - next if f.name == for_context.header
+          - next if f.type == :relation
+          p
+            strong = f.display_name + ': '
+            = field f, tag: 'span'
+    - if index > 0 && (index + 1) % 4 == 0
+      .clearfix
