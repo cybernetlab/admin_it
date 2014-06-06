@@ -1,0 +1,41 @@
+- for_context ||= context
+- id ||= "#{for_context.resource.name}_#{field.name}_fileupload"
+/- opts = { name: name || "#{for_context.resource.name}[#{field.name}]", \
+/           id: , \
+/           value: value || field.read(for_context.entity) }
+
+= id
+
+form#fileupload(
+  data-sign-url=AdminIt::Engine.routes.url_helpers.signed_url_index_path
+  enctype="multipart/form-data"
+  method="POST"
+  action="https://#{AdminIt.config.s3[:bucket]}.s3.amazonaws.com"
+)
+  input type="hidden" name="key"
+  input type="hidden" name="AWSAccessKeyId" value=AdminIt.config.s3[:access_key_id]
+  input type="hidden" name="acl" value="public-read"
+  input type="hidden" name="policy"
+  input type="hidden" name="signature"
+  input type="hidden" name="success_action_status" value="201"
+  .row.fileupload-buttonbar
+    .col-lg-7
+      span.btn.btn-success.fileinput-button>
+        i.fa.fa-plus>
+        span = t('admin_it.image.select')
+        input type="file" name="file"
+      button.btn.btn-primary.start> type="submit"
+        i.fa.fa-upload>
+        span = t('admin_it.image.upload')
+      button.btn.btn-warning.cancel type="reset"
+        i.fa.fa-ban>
+        span = t('admin_it.image.cancel')
+      /! The global file processing state
+      span.fileupload-process
+    /! The global progress state
+    .col-lg-5.fileupload-progress.fade
+      /! The global progress bar
+      .progress.progress-striped.active aria-valuemax="100" aria-valuemin="0" role="progressbar"
+        .progress-bar.progress-bar-success style="width:0%;"
+      /! The extended global progress state
+      .progress-extended &nbsp;

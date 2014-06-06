@@ -24,7 +24,11 @@ module AdminIt
     end
 
     def redirect_to_default
-      redirect_to(resource[resource.default_context].path)
+      if context.child?
+        redirect_to(context.parent.class.url(context.parent, section: context.section))
+      else
+        redirect_to(resource[resource.default_context].url)
+      end
     end
 
     private

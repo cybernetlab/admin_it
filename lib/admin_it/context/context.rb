@@ -71,11 +71,13 @@ module AdminIt
       false
     end
 
-    def self.url(context = nil, **params)
-      url = context.nil? ? path : context.path
+    def self.url(*args, **params)
+      context = nil
+      args.reject! { |arg| arg.is_a?(Context) ? context = arg : false }
+      url = context.nil? ? path(*args) : context.path(*args)
       params = context.nil? ? params : context.url_params(**params)
       if params.key?(:parent) && params[:parent].is_a?(Context)
-        params[:parent] = params[:parent].send(:context_param)
+        params[:parent] = params[:parent].to_link
       end
       unless params.empty?
         url << '?' << params.map { |k, v| "#{k}=#{v}" }.join('&')
@@ -119,7 +121,7 @@ module AdminIt
           store = store[name] ||= {}
         end
 
-        params = controller.request.query_parameters if params.nil?
+        params = controller.request.params if params.nil?
         params = Hash[params.map { |k, v| [k.to_sym, v] }]
 
         run_callbacks :load, arguments: { params: params, store: store } do
@@ -139,22 +141,6 @@ module AdminIt
 
     def name
       @name ||= self.class.context_name
-    end
-
-    def field(name)
-      @fields.find { |f| f.name == name }
-    end
-
-    def fields(scope: :visible)
-      case scope
-      when nil, :all then @fields
-      when :visible then @fields.select { |f| f.visible? }
-      when :hidden then @fields.select { |f| !f.visible? }
-      when :readable then @fields.select { |f| f.readable? }
-      when :writable then @fields.select { |f| f.writable? }
-      when Field::TYPES then @fields.select { |f| f.type == scope }
-      else @fields
-      end
     end
 
     def save(**params)
@@ -226,7 +212,7 @@ module AdminIt
     end
 
     def url_params(**params)
-      params.merge!(parent: @parent.send(:context_param)) unless @parent.nil?
+      params.merge!(parent: @parent.to_link) unless @parent.nil?
       params
     end
 
@@ -239,11 +225,11 @@ module AdminIt
       Partial.new(name, **locals)
     end
 
-    protected
-
-    def context_param
+    def to_link
       "#{resource.name}/#{name}"
     end
+
+    protected
 
     def load_context; end
   end

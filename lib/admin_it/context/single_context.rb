@@ -54,11 +54,11 @@ module AdminIt
 
     def identity; end
 
-    protected
-
-    def context_param
+    def to_link
       identity.nil? ? super : "#{super}(#{identity})"
     end
+
+    protected
 
     #
     module ClassMethods
@@ -128,12 +128,17 @@ module AdminIt
 
     def section=(value)
       value = value.ensure_symbol(downcase: true) || return
-      if sections.empty?
-        return if section != :none
-      else
-        return unless sections.map(&:name).include?(value)
-      end
-      @section = section
+#      if s.empty?
+#        return if section != :none
+#      else
+#        return unless s.map(&:name).include?(value.to_s)
+#      end
+      @section = value
+    end
+
+    def url_params(**params)
+      params[:section] = section unless params.key?(:section)
+      super(**params)
     end
 
     protected

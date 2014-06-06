@@ -18,7 +18,7 @@ AdminIt::Engine.routes.draw do
         controller: "admin_it/#{name}",
         action: resource.default_context)
   end
-#  puts "--- #{Rails.application.routes.url_helpers.methods.sort.to_yaml}"
-#  puts "--- #{AdminIt::Engine.routes.url_helpers.methods.sort.to_yaml}"
-#  puts "--- #{AdminIt::Engine.methods.sort.to_yaml}"
+
+  # generates signed urls for S3
+  resources :signed_url, only: :index
 end

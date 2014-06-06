@@ -1,33 +1,7 @@
 - for_context ||= context
 
-- fields.each do |field|
-  /- next if field == parent_field
-  - name = "#{for_context.resource.name}[#{field.name}]"
-  - id = "#{for_context.resource.name}_#{field.name}"
-  - if field.visible?
-    - if field.partial.nil?
-      .form-group
-        - control_width = 'col-sm-12'
-        - if field.show_label?
-          label.col-sm-2.control-label for="#{id}"
-            = field.display_name
-            - control_width = 'col-sm-10'
-        div class=control_width
-          input(
-            type="text"
-            class="form-control"
-            id=id
-            name=name
-            value=field.read(for_context.entity)
-          )
-    - else
-      = render partial: field.partial, \
-               locals: { field: field, entity: for_context.entity }
-  - else
-    input type="hidden" name=name id=id value=field.read(for_context.entity)
-
 - if for_context.child?
-  - parent_name = "#{for_context.parent.resource.name}_id"
+  - parent_name = for_context.parent.resource.name
   - parent_field = for_context.field(parent_name)
   - if parent_field
     input(
@@ -35,4 +9,27 @@
       value=parent_field.read(for_context.entity)
       type="hidden"
     )
+
+/ hidden fields
+- for_context.fields(scope: :hidden).each do |field|
+  - locals = { field: field, for_context: for_context }
+  = render partial: File.join(%w(admin_it editors hidden)), locals: locals
+
+/ visible fields
+= for_context.fields(scope: :visible).map(&:name)
+/- for_context.fields(scope: :visible).each do |field|
+  - next if field == parent_field || field.editor == :image
+  - locals = { field: field, for_context: for_context }
+  - if field.partial.nil?
+    .form-group
+      - control_width = 'col-sm-12'
+      - if field.show_label?
+        - id = "#{for_context.resource.name}_#{field.name}"
+        label.col-sm-2.control-label for="#{id}"
+          = field.display_name
+          - control_width = 'col-sm-10'
+      div class=control_width
+        = render partial: File.join('admin_it', 'editors', field.editor.to_s), locals: locals
+  - else
+    = render partial: field.partial, locals: locals
 

@@ -6,21 +6,29 @@
   - for_context.entities.each_with_index do |record, index|
     .col-md-3
       .thumbnail.admin-tile
-        - actions = resource.singles.select { |c| !(c <= AdminIt::NewContext) }
+        - actions = for_context.resource.singles.select { |c| !(c <= AdminIt::NewContext) }
         - if actions.size > 0
           .btn-group-vertical.btn-group-sm.pull-right.admin-tile-actions.fade
-            - actions.each do |_context|
-              a(
-                class="btn #{_context <= AdminIt::ShowContext ? 'btn-info' : 'btn-default'}"
-                href=_context.path(for_context.entity)
-              )
-                i.fa class="fa-#{_context.icon}"
-        = field for_context.field(for_context.header), tag: 'h4'
+            - actions.each do |context_class|
+              - params = {}
+              - opts = { class: context_class <= AdminIt::ShowContext ? 'btn-info' : 'btn-default' }
+              - if for_context.child?
+                - opts[:data] = { toggle: :modal, target: '#child_modal' }
+                - params[:layout] = :dialog
+                - params[:parent] = for_context.parent
+              - opts[:href] = context_class.url(for_context.entity, **params)
+              a.btn *opts
+                i.fa class="fa-#{context_class.icon}"
+            - if resource.destroyable?
+              = link_to for_context.resource[:show].url(for_context.entity), \
+                        method: :delete, class: %w(btn btn-danger) do
+                i.fa.fa-trash-o
+        = field for_context.field(for_context.header), tag: 'h4', context: for_context
         - for_context.fields.each do |f|
           - next if f.name == for_context.header
           - next if f.type == :relation
           p
             strong = f.display_name + ': '
-            = field f, tag: 'span'
+            = field f, tag: 'span', context: for_context
     - if index > 0 && (index + 1) % 4 == 0
       .clearfix

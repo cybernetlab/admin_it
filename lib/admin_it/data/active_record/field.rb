@@ -57,6 +57,13 @@ module AdminIt
       end
 
       def write_value(entity, value)
+        if type == :relation
+          if assoc.collection?
+            value.map! { |x| assoc.klass.find(x) }
+          else
+            value = assoc.klass.find(value)
+          end
+        end
         entity.send("#{name}=", value)
       end
     end

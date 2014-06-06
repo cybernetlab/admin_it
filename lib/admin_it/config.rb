@@ -21,5 +21,14 @@ module AdminIt
       end
       @controller = value
     end
+
+    def self.s3
+      @s3 ||= {}
+    end
+
+    def self.s3=(value)
+      fail ArgumentError, 'Wrong S3 options' unless value.is_a?(Hash)
+      @s3 = value
+    end
   end
 end

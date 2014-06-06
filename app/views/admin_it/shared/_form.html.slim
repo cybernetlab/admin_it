@@ -1,12 +1,25 @@
 - for_context ||= context
 
+- parent = for_context.child? ? for_context.parent : for_context
+- resource = for_context.resource
+
 - if for_context.is_a?(AdminIt::NewContext)
-  - action = for_context.resource.collection_path
+  - action = resource.collection_path
 - elsif for_context.is_a?(AdminIt::EditContext)
-  - action = for_context.resource.single_path(for_context.entity)
+  - action = resource.single_path(for_context.entity)
+
+/ images
+= for_context.fields(scope: { editor: :image }).map(&:editor)
+/- for_context.fields(scope: { editor: :image }).each do |field|
+  form.form-horizontal role="form" action="test" method="POST"
+  - locals = { field: field, for_context: for_context }
+  = render partial: File.join(%w(admin_it editors image)), locals: locals
 
 form.form-horizontal role="form" action=action method="POST"
-  input name="authenticity_token" type="hidden" value==form_authenticity_token
+  input name="authenticity_token" type="hidden" value=form_authenticity_token
+  input name="section" type="hidden" value=parent.section
+  - if for_context.child?
+    input name="parent" type="hidden" value=for_context.parent.to_link
   - if for_context.is_a?(AdminIt::EditContext)
     input name="_method" type="hidden" value="patch"
 
@@ -20,7 +33,7 @@ form.form-horizontal role="form" action=action method="POST"
             = section.display_name
     .tab-content
       - for_context.sections.each do |section|
-        .tab-pane class="#{section.name == for_context.section ? 'active' : ''}" id==section.name
+        .tab-pane class="#{section.name == for_context.section ? 'active' : ''}" id=section.name
           - if !section.renderable?
             - fields = for_context.fields.select do |f|
               - section.fields.include?(f.name)
@@ -43,9 +56,13 @@ form.form-horizontal role="form" action=action method="POST"
              locals: { fields: for_context.fields(scope: :all) }
 
   - content_for :buttons do
-    button.btn.btn-primary = t('admin_it.action.save')
+    button.btn.btn-primary type="submit" = t('admin_it.action.save')
 
   - if for_context.layout.empty?
     .form-group
       .col-sm-10.col-sm-offset-2
         = yield :buttons
+
+.modal.fade#child_modal
+  .modal-dialog.modal-lg
+    .modal-content

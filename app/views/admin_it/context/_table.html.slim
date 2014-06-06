@@ -15,8 +15,7 @@
         = header.cell opts do
           = h
           - unless active_sorting.nil?
-            = ' '
-            i.fa class="fa-caret-#{active_sorting.split(':').last == 'asc' ? 'down' : 'up'}"
+            i.fa< class="fa-caret-#{active_sorting.split(':').last == 'asc' ? 'down' : 'up'}"
           - filter_class = for_context.all_filters(scope: :value).find do |f|
             - f.field.field_name == k
           - unless filter_class.nil?

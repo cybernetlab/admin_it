@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'devise'
   spec.add_dependency 'wrap_it'
   spec.add_dependency 'ensure_it'
+  spec.add_dependency 'aws-sdk'
 
   spec.add_development_dependency 'bundler', '~> 1.3'
   spec.add_development_dependency 'sqlite3'

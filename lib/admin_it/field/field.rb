@@ -19,7 +19,8 @@ module AdminIt
     include ExtendIt::Callbacks
 
     TYPES = %i(unknown integer float string date datetime time relation enum
-               array hash range regexp symbol binary)
+               array hash range regexp symbol binary image)
+    EDITORS = %i(text combo radio image hidden)
 
     define_callbacks :initialize
 
@@ -27,6 +28,7 @@ module AdminIt
       dsl_accessor :type, default: TYPES[0]
       dsl_accessor :placeholder
       dsl_accessor :partial
+      dsl_accessor :editor, default: EDITORS[0]
       dsl_boolean :readable, :writable, :visible, :sortable, :show_label
       dsl_block :read, :write, :render, :display
 
@@ -40,7 +42,7 @@ module AdminIt
     end
 
     class << self
-      attr_reader :read, :write, :render, :display, :type, :partial
+      attr_reader :read, :write, :render, :display, :type, :partial, :editor
 
       protected
 
@@ -82,11 +84,16 @@ module AdminIt
         @sortable = opts[:sortable].nil? ? true : opts[:sortable] == true
         @show_label = opts[:show_label].nil? ? true : opts[:show_label] == true
         self.type = opts[:type]
+        self.editor = opts[:editor]
       end
     end
 
     def self.type=(value)
       @type = value.ensure_symbol(values: TYPES, default: TYPES[0])
+    end
+
+    def self.editor=(value)
+      @editor = value.ensure_symbol(values: EDITORS, default: EDITORS[0])
     end
 
     def self.placeholder
@@ -105,7 +112,7 @@ module AdminIt
       @visible = true
     end
 
-    class_attr_reader :entity_class, :display_name, :type, :partial
+    class_attr_reader :entity_class, :display_name, :type, :partial, :editor
     attr_writer :visible, :readable, :writable
 
     def initialize(readable: nil, writable: nil, visible: nil, sortable: nil, show_label: nil)
@@ -228,25 +235,43 @@ module AdminIt
         names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
         names.each { |name| hash[name].show if hash.key?(name) }
       end
+
+    extended do |base|
+      base.include(Scope)
+      base.extend(Scope)
     end
 
-    def fields(scope: :visible)
-      case scope
-      when nil, :all then @fields.values
-      when :visible then @fields.values.select { |f| f.visible? }
-      when :hidden then @fields.values.select { |f| !f.visible? }
-      when :readable then @fields.values.select { |f| f.readable? }
-      when :writable then @fields.values.select { |f| f.writable? }
-      when :sortable then @fields.values.select { |f| f.sortable? }
-      when :with_labels then @fields.values.select { |f| f.show_label? }
-      when :without_labels then @fields.values.select { |f| !f.show_label? }
-      when Field::TYPES then @fields.values.select { |f| f.type == scope }
-      else @fields.values
+    included do |base|
+      base.include(Scope)
+    end
+    end
+
+    module Scope
+      def fields(scope: :visible)
+        values = is_a?(Field) ? @fields : @fields.values
+        if scope.is_a?(Hash)
+          if scope.key?(:editor)
+            return values.select { |f| f.editor == scope[:editor] }
+          end
+        end
+        case scope
+        when nil, :all then values
+        when :visible then values.select { |f| f.visible? }
+        when :hidden then values.select { |f| !f.visible? }
+        when :readable then values.select { |f| f.readable? }
+        when :writable then values.select { |f| f.writable? }
+        when :sortable then values.select { |f| f.sortable? }
+        when :with_labels then values.select { |f| f.show_label? }
+        when :without_labels then values.select { |f| !f.show_label? }
+        when Field::TYPES then values.select { |f| f.type == scope }
+        else values
+        end
       end
-    end
 
-    def field(name)
-      @fields[name.ensure_symbol]
+      def field(name)
+        name = name.ensure_symbol
+        is_a?(Field) ? @fields.find { |f| f.name == name } : @fields[name]
+      end
     end
   end
 end

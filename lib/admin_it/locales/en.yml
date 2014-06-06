@@ -19,3 +19,7 @@ en:
       destroy:
         header: 'You are going to delete following record:'
         text: 'Please, confirm deletion'
+    image:
+      select: 'Select Image'
+      upload: 'Upload'
+      cancel: 'Cancel'

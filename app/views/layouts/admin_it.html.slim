@@ -17,7 +17,17 @@ html
     = javascript_include_tag 'jquery', 'jquery_ujs', 'turbolinks'
     = javascript_include_tag 'admin_it/bootstrap.min', \
                              'data-turbolinks-track' => true
+
+    / JQuery FileUpload
+    = stylesheet_link_tag 'jquery.fileupload'
+    = stylesheet_link_tag 'jquery.fileupload-ui'
+    = javascript_include_tag 'jquery.ui.widget'
+    = javascript_include_tag 'jquery.fileupload'
+    = javascript_include_tag 'jquery.fileupload-ui'
+    = javascript_include_tag 'jquery.fileupload-process'
+
     = javascript_include_tag 'admin_it/admin_it'
+
     = yield :head
 
   body style="padding-top: 70px"

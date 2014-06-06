@@ -1,0 +1,6 @@
+- for_context ||= context
+- name ||= "#{for_context.resource.name}[#{field.name}]"
+- id ||= "#{for_context.resource.name}_#{field.name}"
+- value ||= field.read(for_context.entity)
+- opts = { name: name, id: id, value: value }
+input.form-control type="text" *opts

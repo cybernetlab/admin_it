@@ -36,7 +36,6 @@ module AdminIt
         fields(scope: :writable).each do |field|
           next unless params.key?(field.name)
           next unless field.writable?
-          next if field.type == :relation
           field.write(entity, params[field.name])
         end
         controller.redirect_to_default if entity.save

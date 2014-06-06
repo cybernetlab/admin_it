@@ -41,7 +41,7 @@
       dt = f.display_name
       - value = f.show(for_context.entity)
       - value = value.nil? ? '&nbsp;'.html_safe : value.to_s
-      = field value, tag: 'dd'
+      = field value, tag: 'dd', context: for_context
 .clearfix
 
 - if for_context.confirm?
