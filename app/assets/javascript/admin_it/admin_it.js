@@ -80,7 +80,7 @@ var initLinks = function() {
 }
 
 var initImageUploads = function() {
-  $form = $('[data-sign-url]');
+  $form = $('form[data-sign-url]');
   $form.fileupload({
     url: $form.attr('action'),
     autoUpload: true,
@@ -101,9 +101,13 @@ var initImageUploads = function() {
         }
       });
       data.submit();
-    }
+    },
+    success: function(data) {
+      // Here we get the file url on s3 in an xml doc
+      var url = $(data).find('Location').text()
+      $($form.data('input')).val(url) // Update the real input in the other form
+    },
   });
-})
 }
 
 $(document).on('ready page:load', function() {
@@ -129,5 +133,6 @@ $(document).on('ready page:load', function() {
                    $form.submit();
                  });
                }
+               initImageUploads();
              })
 });

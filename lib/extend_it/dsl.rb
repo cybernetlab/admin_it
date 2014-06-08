@@ -85,7 +85,7 @@ module ExtendIt
           define_method setter_name do |*args|
             obj =
               if setter.nil?
-                default || args.first
+                args.first || default
               else
                 dsl_receiver.instance_exec(*args, &setter)
               end

@@ -143,6 +143,33 @@ module AdminIt
       @name ||= self.class.context_name
     end
 
+    def fields(scope: :visible)
+      values = @fields
+      if scope.is_a?(Hash)
+        if scope.key?(:editor)
+          return values.select { |f| f.editor == scope[:editor] }
+        end
+      end
+      case scope
+      when nil, :all then values
+      when :visible then values.select { |f| f.visible? }
+      when :hidden then values.select { |f| !f.visible? }
+      when :readable then values.select { |f| f.readable? }
+      when :writable then values.select { |f| f.writable? }
+      when :sortable then values.select { |f| f.sortable? }
+      when :with_labels then values.select { |f| f.show_label? }
+      when :without_labels then values.select { |f| !f.show_label? }
+      when Field::TYPES then values.select { |f| f.type == scope }
+      else values
+      end
+    end
+
+    def field(name)
+      name = name.ensure_symbol
+      @fields.find { |f| f.name == name }
+    end
+
+
     def save(**params)
       return if controller.nil?
       session = controller.session

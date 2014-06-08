@@ -33,7 +33,10 @@
               dt = f.display_name
               - value = f.show(for_context.entity)
               - value = value.nil? ? '&nbsp;'.html_safe : value.to_s
-              = field value, tag: 'dd'
+              - if f.editor == :image
+                img src=value
+              - else
+                = field value, tag: 'dd', context: for_context
 - else
   dl.dl-horizontal
     - for_context.fields.each do |f|
@@ -41,7 +44,10 @@
       dt = f.display_name
       - value = f.show(for_context.entity)
       - value = value.nil? ? '&nbsp;'.html_safe : value.to_s
-      = field value, tag: 'dd', context: for_context
+      - if f.editor == :image
+        img.col-md-8 src=value
+      - else
+        = field value, tag: 'dd', context: for_context
 .clearfix
 
 - if for_context.confirm?

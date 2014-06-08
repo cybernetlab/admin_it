@@ -9,9 +9,7 @@
   - action = resource.single_path(for_context.entity)
 
 / images
-= for_context.fields(scope: { editor: :image }).map(&:editor)
-/- for_context.fields(scope: { editor: :image }).each do |field|
-  form.form-horizontal role="form" action="test" method="POST"
+- for_context.fields(scope: { editor: :image }).each do |field|
   - locals = { field: field, for_context: for_context }
   = render partial: File.join(%w(admin_it editors image)), locals: locals
 

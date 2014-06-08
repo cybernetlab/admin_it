@@ -42,7 +42,7 @@ module AdminIt
     end
 
     class << self
-      attr_reader :read, :write, :render, :display, :type, :partial, :editor
+      attr_reader :read, :write, :render, :display, :type, :partial
 
       protected
 
@@ -84,7 +84,7 @@ module AdminIt
         @sortable = opts[:sortable].nil? ? true : opts[:sortable] == true
         @show_label = opts[:show_label].nil? ? true : opts[:show_label] == true
         self.type = opts[:type]
-        self.editor = opts[:editor]
+        self.editor = opts[:editor] unless opts[:editor].nil?
       end
     end
 
@@ -110,6 +110,10 @@ module AdminIt
 
     def self.show
       @visible = true
+    end
+
+    def self.editor
+      @editor ||= EDITORS[0]
     end
 
     class_attr_reader :entity_class, :display_name, :type, :partial, :editor
@@ -139,6 +143,10 @@ module AdminIt
 
     def visible?
       @visible == true
+    end
+
+    def hidden?
+      @visible != true
     end
 
     def sortable?
@@ -235,43 +243,31 @@ module AdminIt
         names = names.ensure_array(:flatten, :ensure_symbol, :compact, :uniq)
         names.each { |name| hash[name].show if hash.key?(name) }
       end
-
-    extended do |base|
-      base.include(Scope)
-      base.extend(Scope)
     end
 
-    included do |base|
-      base.include(Scope)
-    end
-    end
-
-    module Scope
-      def fields(scope: :visible)
-        values = is_a?(Field) ? @fields : @fields.values
-        if scope.is_a?(Hash)
-          if scope.key?(:editor)
-            return values.select { |f| f.editor == scope[:editor] }
-          end
-        end
-        case scope
-        when nil, :all then values
-        when :visible then values.select { |f| f.visible? }
-        when :hidden then values.select { |f| !f.visible? }
-        when :readable then values.select { |f| f.readable? }
-        when :writable then values.select { |f| f.writable? }
-        when :sortable then values.select { |f| f.sortable? }
-        when :with_labels then values.select { |f| f.show_label? }
-        when :without_labels then values.select { |f| !f.show_label? }
-        when Field::TYPES then values.select { |f| f.type == scope }
-        else values
+    def fields(scope: :visible)
+      values = @fields.values
+      if scope.is_a?(Hash)
+        if scope.key?(:editor)
+          return values.select { |f| f.editor == scope[:editor] }
         end
       end
-
-      def field(name)
-        name = name.ensure_symbol
-        is_a?(Field) ? @fields.find { |f| f.name == name } : @fields[name]
+      case scope
+      when nil, :all then values
+      when :visible then values.select { |f| f.visible? }
+      when :hidden then values.select { |f| !f.visible? }
+      when :readable then values.select { |f| f.readable? }
+      when :writable then values.select { |f| f.writable? }
+      when :sortable then values.select { |f| f.sortable? }
+      when :with_labels then values.select { |f| f.show_label? }
+      when :without_labels then values.select { |f| !f.show_label? }
+      when Field::TYPES then values.select { |f| f.type == scope }
+      else values
       end
+    end
+
+    def field(name)
+      @fields[name.ensure_symbol]
     end
   end
 end

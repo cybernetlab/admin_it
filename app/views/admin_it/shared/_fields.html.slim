@@ -11,14 +11,19 @@
     )
 
 / hidden fields
-- for_context.fields(scope: :hidden).each do |field|
+- fields.each do |field|
+  - next if field.visible?
   - locals = { field: field, for_context: for_context }
   = render partial: File.join(%w(admin_it editors hidden)), locals: locals
 
 / visible fields
-= for_context.fields(scope: :visible).map(&:name)
-/- for_context.fields(scope: :visible).each do |field|
-  - next if field == parent_field || field.editor == :image
+- fields.each do |field|
+  - if field.editor == :image
+    - locals = { field: field, for_context: for_context, id: "#{for_context.resource.name}_#{field.name}" }
+    = render partial: File.join(%w(admin_it editors hidden)), locals: locals
+    - next
+  - next unless field.visible?
+  - next if field == parent_field
   - locals = { field: field, for_context: for_context }
   - if field.partial.nil?
     .form-group

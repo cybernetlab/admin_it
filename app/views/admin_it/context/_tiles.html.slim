@@ -6,6 +6,14 @@
   - for_context.entities.each_with_index do |record, index|
     .col-md-3
       .thumbnail.admin-tile
+        / header
+        = field for_context.field(for_context.header), tag: 'h4', context: for_context
+
+        - images = for_context.fields(scope: {editor: :image})
+        - if images.size > 0
+          img src=images.first.read(record)
+
+        / buttons
         - actions = for_context.resource.singles.select { |c| !(c <= AdminIt::NewContext) }
         - if actions.size > 0
           .btn-group-vertical.btn-group-sm.pull-right.admin-tile-actions.fade
@@ -23,10 +31,12 @@
               = link_to for_context.resource[:show].url(for_context.entity), \
                         method: :delete, class: %w(btn btn-danger) do
                 i.fa.fa-trash-o
-        = field for_context.field(for_context.header), tag: 'h4', context: for_context
+
+        / fields
         - for_context.fields.each do |f|
           - next if f.name == for_context.header
           - next if f.type == :relation
+          - next if f.editor == :image
           p
             strong = f.display_name + ': '
             = field f, tag: 'span', context: for_context
