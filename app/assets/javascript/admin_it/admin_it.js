@@ -45,6 +45,16 @@ var initTiles = function() {
     .mouseleave(function() {
       $(this).find('.admin-tile-actions').removeClass('in');
     });
+  $('.admin-tile-actions').each(function() {
+    var $this = $(this);
+    var $parent = $this.parent();
+    var pos = $parent.position();
+    $this.css({
+      position: 'absolute',
+      top: pos.top + 10,
+      left: pos.left + $parent.outerWidth() - $this.outerWidth() - 10
+    });
+  });
 }
 
 var initPopups = function() {

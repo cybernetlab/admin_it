@@ -1,8 +1,16 @@
 - for_context ||= context
+- parent = for_context.child? ? for_context.parent : for_context
 
 - if for_context.count == 0
   h2: small = t 'admin_it.collection.no_data'
 - else
+
+  - params = {}
+  - params[:section] = parent.section if parent.respond_to?(:section)
+  - if for_context.child?
+    - params[:layout] = :dialog
+    - params[:parent] = for_context.parent
+
   - for_context.entities.each_with_index do |record, index|
     .col-md-3
       .thumbnail.admin-tile
@@ -16,19 +24,16 @@
         / buttons
         - actions = for_context.resource.singles.select { |c| !(c <= AdminIt::NewContext) }
         - if actions.size > 0
-          .btn-group-vertical.btn-group-sm.pull-right.admin-tile-actions.fade
+          .btn-group-vertical.btn-group-sm.admin-tile-actions.fade
             - actions.each do |context_class|
-              - params = {}
               - opts = { class: context_class <= AdminIt::ShowContext ? 'btn-info' : 'btn-default' }
               - if for_context.child?
                 - opts[:data] = { toggle: :modal, target: '#child_modal' }
-                - params[:layout] = :dialog
-                - params[:parent] = for_context.parent
               - opts[:href] = context_class.url(for_context.entity, **params)
               a.btn *opts
                 i.fa class="fa-#{context_class.icon}"
             - if resource.destroyable?
-              = link_to for_context.resource[:show].url(for_context.entity), \
+              = link_to for_context.resource[:show].url(for_context.entity, **params), \
                         method: :delete, class: %w(btn btn-danger) do
                 i.fa.fa-trash-o
 

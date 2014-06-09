@@ -24,3 +24,6 @@
   margin-top: 10px;
 }
 
+.fileupload-image img, .admin-show-image {
+  max-width: 500px;
+}

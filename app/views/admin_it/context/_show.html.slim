@@ -34,7 +34,7 @@
               - value = f.show(for_context.entity)
               - value = value.nil? ? '&nbsp;'.html_safe : value.to_s
               - if f.editor == :image
-                img src=value
+                img.admin-show-image src=value
               - else
                 = field value, tag: 'dd', context: for_context
 - else
@@ -45,7 +45,7 @@
       - value = f.show(for_context.entity)
       - value = value.nil? ? '&nbsp;'.html_safe : value.to_s
       - if f.editor == :image
-        img.col-md-8 src=value
+        img.admin-show-image src=value
       - else
         = field value, tag: 'dd', context: for_context
 .clearfix

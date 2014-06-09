@@ -5,29 +5,22 @@ html
     meta charset="utf-8"
     = csrf_meta_tags
 
-    = stylesheet_link_tag 'admin_it/bootstrap.min', \
-                          media: 'all', \
-                          'data-turbolinks-track' => true
-    = stylesheet_link_tag 'admin_it/font-awesome.min', \
-                          media: 'all', \
-                          'data-turbolinks-track' => true
-    = stylesheet_link_tag 'admin_it/admin_it', \
-                          media: 'all', \
-                          'data-turbolinks-track' => true
-    = javascript_include_tag 'jquery', 'jquery_ujs', 'turbolinks'
-    = javascript_include_tag 'admin_it/bootstrap.min', \
-                             'data-turbolinks-track' => true
+    /= stylesheet_link_tag 'admin_it/bootstrap.min', media: 'all'
+    /= stylesheet_link_tag 'admin_it/font-awesome.min', media: 'all'
+    /= stylesheet_link_tag 'admin_it/admin_it', media: 'all'
+    /= javascript_include_tag 'jquery', 'jquery_ujs'
+    /= javascript_include_tag 'admin_it/bootstrap.min'
 
     / JQuery FileUpload
-    = stylesheet_link_tag 'jquery.fileupload'
-    = stylesheet_link_tag 'jquery.fileupload-ui'
-    = javascript_include_tag 'jquery.ui.widget'
-    = javascript_include_tag 'jquery.fileupload'
-    = javascript_include_tag 'jquery.fileupload-ui'
-    = javascript_include_tag 'jquery.fileupload-process'
+    /= stylesheet_link_tag 'admin_it/jquery.fileupload'
+    /= stylesheet_link_tag 'admin_it/jquery.fileupload-ui'
+    /= javascript_include_tag 'admin_it/jquery.ui.widget'
+    /= javascript_include_tag 'admin_it/jquery.fileupload'
+    /= javascript_include_tag 'admin_it/jquery.fileupload-ui'
+    /= javascript_include_tag 'admin_it/jquery.fileupload-process'
 
-    = javascript_include_tag 'admin_it/admin_it'
-
+    = stylesheet_link_tag 'admin_it/index', media: 'all'
+    = javascript_include_tag 'admin_it/index'
     = yield :head
 
   body style="padding-top: 70px"

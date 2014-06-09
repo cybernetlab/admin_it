@@ -24,8 +24,8 @@ form.form-horizontal(
         = field.display_name
         - control_width = 'col-sm-10'
     div class=control_width
-      .row.image
-        img.col-lg-11 src=field.read(for_context.entity)
+      .row.fileupload-image
+        img src=field.read(for_context.entity)
       .row.fileupload-buttonbar
         .col-lg-9
           .btn-group

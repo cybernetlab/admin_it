@@ -13,14 +13,15 @@ module AdminIt
           require file
         end
       end
-#      Assets.register(Rails.application.assets)
+      # Assets.register(Rails.application.assets)
 
       ActionController::Base.module_eval do
-        prepend_view_path 'lib/views'
+        prepend_view_path File.join('lib', 'views')
       end
     end
 
     config.app_middleware.insert_after(Rack::ETag, Middleware)
+    config.assets.precompile += ['admin_it/index.js', 'admin_it/index.css']
   end
 
   def self.config
