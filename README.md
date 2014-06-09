@@ -36,6 +36,12 @@ bundle install
 
 # Changes
 
+`1.2.2`
+* added: select2 fields
+
+`1.2.1`
+* added: nested models support
+
 `1.2.0`
 * added: partials for fields
 * updated: FontAwesome to `4.1.0`

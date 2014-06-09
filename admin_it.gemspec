@@ -9,25 +9,25 @@ Gem::Specification.new do |spec|
   spec.version       = AdminIt::VERSION
   spec.authors       = ['Alexey Ovchinnikov']
   spec.email         = ['alexiss@cybernetlab.ru']
-  spec.description   = %q{Admin interface}
-  spec.summary       = %q{Admin interface}
+  spec.description   = %q(Admin interface)
+  spec.summary       = %q(Admin interface)
   spec.homepage      = 'https://github.com/cybernetlab/admin_it'
   spec.license       = 'MIT'
   spec.metadata      = {
     'issue_tracker' => 'https://github.com/cybernetlab/admin_it/issues'
   }
 
-  spec.files         = `git ls-files`.split($/)
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.files         = `git ls-files`.split($INPUT_RECORD_SEPARATOR)
+  spec.executables   = spec.files.grep(/^bin\//) { |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(/^(test|spec|features)\//)
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'sprockets'
   spec.add_dependency 'rails', '~> 4.0'
   spec.add_dependency 'devise'
   spec.add_dependency 'wrap_it'
   spec.add_dependency 'ensure_it'
   spec.add_dependency 'aws-sdk'
+  spec.add_dependency 'select2-rails'
 
   spec.add_development_dependency 'bundler', '~> 1.3'
   spec.add_development_dependency 'sqlite3'

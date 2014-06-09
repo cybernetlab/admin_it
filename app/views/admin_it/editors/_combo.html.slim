@@ -1,0 +1,11 @@
+- for_context ||= context
+- name ||= "#{for_context.resource.name}[#{field.name}]"
+- id ||= "#{for_context.resource.name}_#{field.name}"
+- value ||= field.read(for_context.entity)
+- options = for_context.entity.class.enumerized_attributes[field.name].options
+- opts = { name: name, id: id }
+
+select.select2 *opts
+  - options.each do |option|
+    - selected = option[1] == value ? { selected: 'selected' } : {}
+    option value=option[1] *selected = option[0]

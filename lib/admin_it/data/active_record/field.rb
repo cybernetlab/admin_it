@@ -46,11 +46,13 @@ module AdminIt
               I18n.t('admin_it.collection.no_data')
             else
               v = context.read(value.first)
-              v.nil? ? '' : context.read(value.first) + ' ...'
+              v.nil? ? '' : v + ' ...'
             end
           else
             context.read(value)
           end
+        elsif type == :enum
+          value.text
         else
           value
         end

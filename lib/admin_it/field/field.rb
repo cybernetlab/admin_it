@@ -113,7 +113,10 @@ module AdminIt
     end
 
     def self.editor
-      @editor ||= EDITORS[0]
+      return @editor unless @editor.nil?
+      return @editor = :image if type == :image
+      return @editor = :combo if type == :enum
+      @editor = EDITORS[0]
     end
 
     class_attr_reader :entity_class, :display_name, :type, :partial, :editor
@@ -212,7 +215,11 @@ module AdminIt
     end
 
     def show_value(entity)
-      read_value(entity)
+      if type == :enum
+        entity.send(name).text
+      else
+        read_value(entity)
+      end
     end
 
     def write_value(entity, value)

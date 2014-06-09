@@ -9,9 +9,8 @@ module AdminIt
         entity = entity_class.find(identity)
         controller.authorize(entity, "#{name}?") if AdminIt::Env.pundit?
         if child?
-          fields
-            .select { |f| f.type == :relation &&
-                          f.assoc.klass == parent.entity_class }
+          fields(scope: :relation)
+            .select { |f| f.assoc.klass == parent.entity_class }
             .each do |f|
               if f.assoc.collection?
                 entity.send(f.name) << parent.entity
@@ -53,9 +52,8 @@ module AdminIt
       def self.included(base)
         base.after_initialize do
           if child?
-            fields
-              .select { |f| f.type == :relation &&
-                            f.assoc.klass == parent.entity_class }
+            fields(scope: :relation)
+              .select { |f| f.assoc.klass == parent.entity_class }
               .each do |f|
                 if f.assoc.collection?
                   entity.send(f.name) << parent.entity

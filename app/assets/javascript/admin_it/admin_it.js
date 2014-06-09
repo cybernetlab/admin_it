@@ -120,6 +120,12 @@ var initImageUploads = function() {
   });
 }
 
+var initSelects = function() {
+  $('.select2:not(.select2-container)').select2({
+    minimumResultsForSearch: -1 // disable search
+  });
+}
+
 $(document).on('ready page:load', function() {
   initPartials();
   // initDialogs();
@@ -128,6 +134,7 @@ $(document).on('ready page:load', function() {
   initPopups();
   initLinks();
   initImageUploads();
+  initSelects();
   // allow dialog content reloading
   $('.modal').on('hidden.bs.modal', function() { $(this).removeData(); })
              .on('loaded.bs.modal', function() {
@@ -144,5 +151,6 @@ $(document).on('ready page:load', function() {
                  });
                }
                initImageUploads();
+               initSelects();
              })
 });
