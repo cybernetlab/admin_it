@@ -30,5 +30,13 @@ module AdminIt
       fail ArgumentError, 'Wrong S3 options' unless value.is_a?(Hash)
       @s3 = value
     end
+
+    def self.google_maps_key
+      @google_maps_key
+    end
+
+    def self.google_maps_key=(value)
+      @google_maps_key = value
+    end
   end
 end

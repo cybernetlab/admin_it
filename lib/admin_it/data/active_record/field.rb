@@ -20,21 +20,21 @@ module AdminIt
       protected
 
       def read_value(entity)
-        value = entity.send(name)
         if type == :relation
+          value = entity.send(name)
           if assoc.collection?
             value.nil? || value.empty? ? [] : value.map(&:id).to_json
           else
             value.nil? ? nil : value.id
           end
         else
-          value
+          super(entity)
         end
       end
 
       def show_value(entity)
-        value = entity.send(name)
         if type == :relation
+          value = entity.send(name)
           resource = AdminIt.resources.values.find do |r|
             r.entity_class == assoc.klass
           end
@@ -51,10 +51,8 @@ module AdminIt
           else
             context.read(value)
           end
-        elsif type == :enum
-          value.text
         else
-          value
+          super(entity)
         end
       end
 
@@ -65,8 +63,10 @@ module AdminIt
           else
             value = assoc.klass.find(value)
           end
+          entity.send("#{name}=", value)
+        else
+          super(entity, value)
         end
-        entity.send("#{name}=", value)
       end
     end
   end

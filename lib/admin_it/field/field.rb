@@ -19,8 +19,8 @@ module AdminIt
     include ExtendIt::Callbacks
 
     TYPES = %i(unknown integer float string date datetime time relation enum
-               array hash range regexp symbol binary image)
-    EDITORS = %i(text combo radio image hidden)
+               array hash range regexp symbol binary image geo_point)
+    EDITORS = %i(text combo radio image hidden geo_picker)
 
     define_callbacks :initialize
 
@@ -116,6 +116,7 @@ module AdminIt
       return @editor unless @editor.nil?
       return @editor = :image if type == :image
       return @editor = :combo if type == :enum
+      return @editor = :geo_picker if type == :geo_point
       @editor = EDITORS[0]
     end
 
@@ -209,22 +210,45 @@ module AdminIt
 
     protected
 
-    def read_value(entity)
-      fail NotImplementedError,
-           "Attempt to read field #{name} with unimplemented reader"
-    end
+#    def read_value(entity)
+#      fail NotImplementedError,
+#           "Attempt to read field #{name} with unimplemented reader"
+#    end
+#
+#    def show_value(entity)
+#      fail NotImplementedError,
+#           "Attempt to show field #{name} with unimplemented show method"
+#    end
+#
+#    def write_value(entity, value)
+#      fail NotImplementedError,
+#           "Attempt to write to field #{name} with unimplemented writer"
+#    end
 
     def show_value(entity)
+      value = read_value(entity)
       if type == :enum
-        entity.send(name).text
+        value.text
+      elsif type == :geo_point
+        value.nil? ? '' : "#{value.x}, #{value.y}"
       else
-        read_value(entity)
+        value
       end
     end
 
+    def read_value(entity)
+      entity.send(name)
+    end
+
     def write_value(entity, value)
-      fail NotImplementedError,
-           "Attempt to write to field #{name} with unimplemented writer"
+      if type == :geo_point
+        point = entity.send(name)
+        x, y = value.split(',', 2)
+        factory = entity_class.const_get(:FACTORY, true)
+        point = factory.point(x.to_f, y.to_f)
+        value = point
+      end
+      entity.send("#{name}=", value)
     end
   end
 

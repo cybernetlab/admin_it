@@ -126,6 +126,35 @@ var initSelects = function() {
   });
 }
 
+var initGeoPickers = function() {
+  $('[data-geo-picker]').each(function() {
+    var $this = $(this);
+    var $input = $($this.data('geoPicker'));
+    var arr = $input.val().split(',');
+    var lon = parseFloat(arr[0]);
+    var lat = parseFloat(arr[1]);
+    $this.geoLocationPicker({
+      gMapZoom: 13,
+      gMapMapTypeId: google.maps.MapTypeId.ROADMAP,
+      gMapMarkerTitle: 'Выбирите местоположение',
+      showPickerEvent: 'click',
+      defaultLat: lat || 55.751607, // center
+      defaultLng: lon || 37.617159, // of Moscow
+      defaultLocationCallback: function(lat, lon) {
+        $input.val(lon + ', ' + lat);
+        $input.parent().find('.x').text(lon);
+        $input.parent().find('.y').text(lat);
+      }
+    });
+  });
+}
+
+var initControls = function() {
+  initImageUploads();
+  initSelects();
+  initGeoPickers();
+}
+
 $(document).on('ready page:load', function() {
   initPartials();
   // initDialogs();
@@ -133,8 +162,7 @@ $(document).on('ready page:load', function() {
   initTabs();
   initPopups();
   initLinks();
-  initImageUploads();
-  initSelects();
+  initControls();
   // allow dialog content reloading
   $('.modal').on('hidden.bs.modal', function() { $(this).removeData(); })
              .on('loaded.bs.modal', function() {
@@ -150,7 +178,6 @@ $(document).on('ready page:load', function() {
                    $form.submit();
                  });
                }
-               initImageUploads();
-               initSelects();
+               initControls();
              })
 });

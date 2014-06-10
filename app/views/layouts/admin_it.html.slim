@@ -4,23 +4,12 @@ html
     title Admin
     meta charset="utf-8"
     = csrf_meta_tags
-
-    /= stylesheet_link_tag 'admin_it/bootstrap.min', media: 'all'
-    /= stylesheet_link_tag 'admin_it/font-awesome.min', media: 'all'
-    /= stylesheet_link_tag 'admin_it/admin_it', media: 'all'
-    /= javascript_include_tag 'jquery', 'jquery_ujs'
-    /= javascript_include_tag 'admin_it/bootstrap.min'
-
-    / JQuery FileUpload
-    /= stylesheet_link_tag 'admin_it/jquery.fileupload'
-    /= stylesheet_link_tag 'admin_it/jquery.fileupload-ui'
-    /= javascript_include_tag 'admin_it/jquery.ui.widget'
-    /= javascript_include_tag 'admin_it/jquery.fileupload'
-    /= javascript_include_tag 'admin_it/jquery.fileupload-ui'
-    /= javascript_include_tag 'admin_it/jquery.fileupload-process'
-
     = stylesheet_link_tag 'admin_it/index', media: 'all'
     = javascript_include_tag 'admin_it/index'
+    - unless AdminIt.config.google_maps_key.nil?
+      = javascript_include_tag(raw( \
+        "//maps.googleapis.com/maps/api/js?" \
+        "key=#{AdminIt.config.google_maps_key}&sensor=false"))
     = yield :head
 
   body style="padding-top: 70px"

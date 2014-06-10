@@ -40,15 +40,7 @@ module AdminIt
 
     #
     module Field
-      protected
-
-      def read_value(entity)
-        entity.send(name)
-      end
-
-      def write_value(entity, value)
-        entity.send("#{name}=", value)
-      end
+#      protected
     end
   end
 end

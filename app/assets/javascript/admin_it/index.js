@@ -5,5 +5,6 @@
 //= require admin_it/jquery.fileupload
 //= require admin_it/jquery.fileupload-ui
 //= require admin_it/jquery.fileupload-process
+//= require admin_it/jquery.geolocationpicker.js
 //= require select2
 //= require admin_it/admin_it

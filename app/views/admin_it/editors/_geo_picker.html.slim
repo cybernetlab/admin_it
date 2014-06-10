@@ -1,0 +1,14 @@
+- for_context ||= context
+- name ||= "#{for_context.resource.name}[#{field.name}]"
+- id ||= "#{for_context.resource.name}_#{field.name}"
+- value ||= field.read(for_context.entity)
+
+span
+  input type="hidden" id=id name=name value=field.show(for_context.entity)
+  = t('admin_it.longtitude') + ': '
+  span.x = value.respond_to?(:x) ? value.x : ''
+  = ', ' + t('admin_it.latitude') + ': '
+  span.y = value.respond_to?(:y) ? value.y : ''
+
+.btn.btn-warning.pull-right data-geo-picker="##{id}"
+  i.fa.fa-globe

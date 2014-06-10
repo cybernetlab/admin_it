@@ -36,7 +36,10 @@ bundle install
 
 # Changes
 
-`1.2.4`
+`1.2.6`
+* added: geo location picker
+
+`1.2.5`
 * fixed: Content-Length in production environment for UTF-8
 
 `1.2.4`
