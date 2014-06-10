@@ -159,7 +159,7 @@ module AdminIt
       when :sortable then values.select { |f| f.sortable? }
       when :with_labels then values.select { |f| f.show_label? }
       when :without_labels then values.select { |f| !f.show_label? }
-      when Field::TYPES then values.select { |f| f.type == scope }
+      when *Field::TYPES then values.select { |f| f.type == scope }
       else values
       end
     end

@@ -27,6 +27,15 @@ module AdminIt
         entity = context.entity
         resource = parent.parent.resource
         single = resource.singles.select { |c| !(c <= NewContext) }
+
+        p_context = context.child? ? context.parent : context
+        params = {}
+        params[:section] = p_context.section if p_context.respond_to?(:section)
+        if context.child?
+          params[:layout] = :dialog
+          params[:parent] = context.parent
+        end
+
         buttons = single.map do |_context|
           if _context <= ShowContext && context.show_in_dialog?
             '<a class="btn btn-xs btn-info" ' +
@@ -35,8 +44,9 @@ module AdminIt
             %Q(<i class="fa fa-#{_context.icon}"></i></a>)
           else
             cl = _context <= ShowContext ? 'info' : 'default'
-            href = _context.path(entity)
-            "<a class=\"btn btn-xs btn-#{cl}\" href=\"#{href}\">" \
+            href = _context.url(entity, **params)
+            data = context.child? ? %Q(data-toggle="modal" data-target="#confirm_modal") : ''
+            "<a class=\"btn btn-xs btn-#{cl}\" href=\"#{href}\"#{data}>" \
             "<i class=\"fa fa-#{_context.icon}\"></i></a>"
           end
         end
