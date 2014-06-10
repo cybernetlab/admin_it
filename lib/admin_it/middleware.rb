@@ -46,7 +46,7 @@ module AdminIt
         length = 0
         body.each do |str|
           str.gsub!(SUBST_REGEXP) { |s| request[SUBST_REGEXP.match(s)[1]] }
-          length += str.size
+          length += str.bytesize
         end
         headers['Content-Length'] = length.to_s
       end

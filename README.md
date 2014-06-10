@@ -37,6 +37,9 @@ bundle install
 # Changes
 
 `1.2.4`
+* fixed: Content-Length in production environment for UTF-8
+
+`1.2.4`
 * fixed: Content-Length in production environment
 
 `1.2.3`
