@@ -169,7 +169,6 @@ module AdminIt
       @fields.find { |f| f.name == name }
     end
 
-
     def save(**params)
       return if controller.nil?
       session = controller.session

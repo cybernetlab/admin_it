@@ -42,12 +42,12 @@ module AdminIt
     def call(env)
       request = env[Request::ENV_KEY] = Request.new(env)
       status, headers, body = @app.call(env)
-      if request.process?
-        body.each do |str|
-          # $1 not working here ???
-          str.gsub!(SUBST_REGEXP) { |s| request[SUBST_REGEXP.match(s)[1]] }
-        end
-      end
+      # if request.process?
+      #   body.each do |str|
+      #     # $1 not working here ???
+      #     str.gsub!(SUBST_REGEXP) { |s| request[SUBST_REGEXP.match(s)[1]] }
+      #   end
+      # end
       [status, headers, body]
     end
   end
