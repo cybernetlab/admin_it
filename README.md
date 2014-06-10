@@ -36,6 +36,12 @@ bundle install
 
 # Changes
 
+`1.2.4`
+* fixed: Content-Length in production environment
+
+`1.2.3`
+* minor fixes
+
 `1.2.2`
 * added: select2 fields
 

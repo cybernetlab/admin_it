@@ -33,7 +33,7 @@ module AdminIt
 
   # AdminIt middleware
   class Middleware
-    SUBST_REGEXP = /<!--\s*([a-zA-Z0-9_]+)\s*-->/
+    SUBST_REGEXP = /<!--\s*(?<name>[a-zA-Z0-9_]+)\s*-->/
 
     def initialize(app)
       @app = app
@@ -42,12 +42,14 @@ module AdminIt
     def call(env)
       request = env[Request::ENV_KEY] = Request.new(env)
       status, headers, body = @app.call(env)
-      # if request.process?
-      #   body.each do |str|
-      #     # $1 not working here ???
-      #     str.gsub!(SUBST_REGEXP) { |s| request[SUBST_REGEXP.match(s)[1]] }
-      #   end
-      # end
+      if request.process?
+        length = 0
+        body.each do |str|
+          str.gsub!(SUBST_REGEXP) { |s| request[SUBST_REGEXP.match(s)[1]] }
+          length += str.size
+        end
+        headers['Content-Length'] = length.to_s
+      end
       [status, headers, body]
     end
   end
