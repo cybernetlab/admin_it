@@ -5,7 +5,8 @@ requirejs.config({
     jquery: '../../components/jquery/dist/jquery',
     underscore: '../../components/underscore/underscore',
     backbone: '../../components/backbone/backbone',
-    mustache: '../../components/mustache/mustache'
+    mustache: '../../components/mustache/mustache',
+    nestedtypes: '../../lib/nestedtypes'
   }
 });
 
@@ -16,5 +17,5 @@ require(
 function($, App, Mustache) {
   'use strict';
 
-  App.initialize({ template: Mustache });
+  App.initialize({ template: Mustache, icons: 'fa' });
 });
