@@ -1,22 +1,8 @@
-<!doctype html>
-<html>
-  <head>
-    <title>AdminIt Client test app</title>
-    <script data-main="src/js/main" src="components/requirejs/require.js"></script>
-
-    <script type="application/json" id="manifest">
-      [
-        {
-          "id": "users",
-          "icon": "users"
-        }
-      ]
-    </script>
-
-    <script type="application/mustache" id="adminIt_mainView">
-      <h1>test</h1>
-    </script>
-  </head>
-  <body>
-  </body>
-</html>
+<!DOCTYPE html><html><head><title>AdminIt Client test app</title><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" /><script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" /><script data-main="src/js/main" src="components/requirejs/require.js"></script><script data-name="resources" data-type="data" type="application/json">[
+  {
+    "id": "users",
+    "name": "Users",
+    "icon": "users"
+  }
+]
+</script><script data-name="main_view" data-type="template" type="application/mustache"><ul class="nav nav-tabs nav-stacked">{{#items}}<li><a href="#{{id}}">{{#icon}}<i class="fa fa-{{icon}}"></i>&nbsp;{{/icon}}{{name}}</a></li>{{/items}}</ul></script></head><body></body></html>

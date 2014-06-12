@@ -1,0 +1,22 @@
+doctype html
+html
+  head
+    title AdminIt Client Test App
+
+    / Bootstrap
+    link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"
+    script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"
+    script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"
+
+    / Font-Awesome
+    link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet"
+
+    / AdminIt
+    script data-main="src/js/main" src="components/requirejs/require.js"
+
+    / data
+    script type="application/json" data-type="data" data-name="resources"
+      == include File.join(pwd, 'manifest.json')
+    / bootstrap templates
+    == render 'bootstrap'
+  body

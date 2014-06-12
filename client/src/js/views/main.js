@@ -14,7 +14,7 @@ function($, _, Backbone) {
     },
 
     render: function() {
-      this.$el.html(this.template.render(this.collection.toJSON()));
+      this.$el.html(this.template.render({ items: this.collection.toJSON() }));
       return this;
     }
   });

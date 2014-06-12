@@ -1,12 +1,9 @@
 define(
 
-['jquery', 'underscore', 'underscore.string', 'backbone'],
+['jquery', 'underscore', 'backbone'],
 
-function($, _, _str, Backbone) {
+function($, _, Backbone) {
   'use strict';
-
-  // import underscore.string
-  _.mixin(_str.exports());
 
   var loadString = function(app, source, target) {
     // for jQuery source return inner html
@@ -16,11 +13,14 @@ function($, _, _str, Backbone) {
         // for strings, that contains JSON or HTML symbols return string itself
         return source;
       } else {
-        // for other strings assumes that string is URI
+        // for other strings assumes that string is jQuery selector or URI
         if (source.indexOf('http') != 0 && source[0] != '/') {
+          var selector = '[data-name="' + source + '"][data-type="';
+          selector += (target == app.config.template) ? 'template"]' : 'data"]';
+          var jquery = $(selector);
+          if (jquery.length > 0) return jquery.first().html();
+          // source is relative URI - make URI absolute
           if (target == app.config.template) {
-            var x = $('#' + _.map(source.split('/'), _.camelize).join('_'));
-            if (x.length > 0) return x.first().html();
             source = app.config.template_url + '/' + source;
           } else {
             source = app.config.api_url + '/' + source;

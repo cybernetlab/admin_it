@@ -26,7 +26,7 @@ function($, _) {
         Template.prototype.initialize = function(template) {
           this.engine = engine;
           this.template = template;
-          this.engine.parse(str);
+          this.engine.parse(template);
         };
 
         Template.prototype.render = function(data) {

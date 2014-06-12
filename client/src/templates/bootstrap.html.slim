@@ -1,0 +1,3 @@
+- render_each File.join(pwd, 'bootstrap') do |name, content|
+  script type="application/mustache" data-type="template" data-name=name.split('/').last
+    == content

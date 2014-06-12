@@ -4,18 +4,17 @@ requirejs.config({
     admin_it: './',
     jquery: '../../components/jquery/dist/jquery',
     underscore: '../../components/underscore/underscore',
-    "underscore.string": '../../components/underscore.string/lib/underscore.string',
-    backbone: '../../components/backbone/backbone'
+    backbone: '../../components/backbone/backbone',
+    mustache: '../../components/mustache/mustache'
   }
 });
 
 require(
 
-['jquery', 'admin_it/app'],
+['jquery', 'admin_it/app', 'mustache'],
 
-function($, App) {
+function($, App, Mustache) {
   'use strict';
 
-  // console.log(App);
-  App.initialize();
+  App.initialize({ template: Mustache });
 });

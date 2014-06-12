@@ -18,8 +18,10 @@
     "requirejs": "latest",
     "backbone": "latest",
     "underscore": "latest",
-    "underscore.string": "latest",
     "bootstrap": "latest",
     "fontawesome": "latest"
+  },
+  "devDependencies": {
+    "mustache": "latest"
   }
 }

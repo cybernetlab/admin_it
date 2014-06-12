@@ -7,11 +7,13 @@ define(
 function($, _, Backbone, Loader, Template, Resources, MainView) {
   'use strict';
 
+  // loads and verifies user config
   var checkConfig = function(options) {
     var config = _.extend({
       api_url: '/api',
       template_url: '',
-      template: _.template
+      template: _.template,
+      resources: 'resources'
     }, options);
 
     if (!_.isString(config.api_url)) throw new Error('Wrong api_url option');
@@ -20,7 +22,6 @@ function($, _, Backbone, Loader, Template, Resources, MainView) {
     if (!_.isString(config.template_url)) throw new Error('Wrong template_url option');
     config.template_url = config.template_url.replace(/\/+$/, '');
 
-    if (_.isEmpty(config.resources)) config.resources = $('#manifest').first();
     if (_.isEmpty(config.container)) config.container = $('body').first();
     if (_.isString(config.container)) config.container = $(config.container).first();
     return config;
@@ -33,12 +34,8 @@ function($, _, Backbone, Loader, Template, Resources, MainView) {
       this.loader = new Loader(this);
       this.resources = new Resources();
 
-//      if (config.container.find('.admin-it-main-view').length == 0) {
-//        append('<div class=".admin-it-main-view"></div>');
-//      }
-
       this.loader
-        .load('admin_it/main_view', this.config.template)
+        .load('main_view', this.config.template)
         .done(_.bind(function(template) {
           this.mainView = new MainView({
             app: this,

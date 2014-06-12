@@ -1,0 +1,9 @@
+ul.nav.nav-tabs.nav-stacked
+  | {{#items}}
+  li: a href="\#{{id}}"
+    | {{#icon}}
+    i.fa class="fa-{{icon}}"
+    | &nbsp;
+    | {{/icon}}
+    | {{name}}
+  | {{/items}}
