@@ -36,6 +36,9 @@ bundle install
 
 # Changes
 
+`1.2.8`
+* nested edit dialog fixed
+
 `1.2.7`
 * image uploads fixed
 

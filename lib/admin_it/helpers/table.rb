@@ -45,7 +45,7 @@ module AdminIt
           else
             cl = _context <= ShowContext ? 'info' : 'default'
             href = _context.url(entity, **params)
-            data = context.child? ? %Q(data-toggle="modal" data-target="#confirm_modal") : ''
+            data = context.child? ? %Q(data-toggle="modal" data-target="#child_modal") : ''
             "<a class=\"btn btn-xs btn-#{cl}\" href=\"#{href}\"#{data}>" \
             "<i class=\"fa fa-#{_context.icon}\"></i></a>"
           end
