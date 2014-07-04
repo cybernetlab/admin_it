@@ -1,6 +1,6 @@
 define(
 
-['jquery', 'underscore', 'backbone',
+['jquery', 'underscore', 'nestedtypes',
  'admin_it/models/resource'],
 
 function($, _, Backbone, Resource) {
@@ -10,5 +10,5 @@ function($, _, Backbone, Resource) {
     model: Resource
   });
 
-  return Resources
+  return Resources;
 });

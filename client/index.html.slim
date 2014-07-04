@@ -15,8 +15,8 @@ html
     script data-main="src/js/main" src="components/requirejs/require.js"
 
     / data
-    script type="application/json" data-type="data" data-name="resources"
-      == include File.join(pwd, 'manifest.json')
+    script type="application/json" data-type="data" data-name="metadata"
+      == include File.join(pwd, 'metadata.json')
     / bootstrap templates
     == render 'bootstrap'
   body

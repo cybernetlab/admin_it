@@ -1,8 +1,16 @@
-<!DOCTYPE html><html><head><title>AdminIt Client test app</title><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" /><script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" /><script data-main="src/js/main" src="components/requirejs/require.js"></script><script data-name="resources" data-type="data" type="application/json">[
-  {
-    "id": "users",
-    "name": "Users",
-    "icon": "users"
-  }
-]
-</script><script data-name="main_view" data-type="template" type="application/mustache"><ul class="nav nav-tabs nav-stacked">{{#items}}<li><a href="#{{id}}">{{#icon}}<i class="fa fa-{{icon}}"></i>&nbsp;{{/icon}}{{name}}</a></li>{{/items}}</ul></script></head><body></body></html>
+<!DOCTYPE html><html><head><title>AdminIt Client Test App</title><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" /><script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" /><script data-main="src/js/main" src="components/requirejs/require.js"></script><script data-name="metadata" data-type="data" type="application/json">{
+  "resources": [
+    {
+      "id": "users",
+      "name": "Users",
+      "icon": "users"
+    },
+
+    {
+      "id": "roles",
+      "name": "Roles",
+      "icon": "lock"
+    }
+  ]
+}
+</script><script data-name="main_menu" data-type="template" type="application/mustache"><ul class="nav nav-pills nav-stacked">{{#items}}<li class="admin-it-main-menu-item" data-id="{{id}}"><a href="#">{{#icon}}{{>icon}} {{/icon}}{{name}}</a></li>{{/items}}</ul></script><script data-name="main_view" data-type="template" type="application/mustache"><div class="container-fluid"><div class="row"><div class="admin-it-main-menu col-md-2"></div><div class="admin-it-work-area col-md-10"></div></div></div></script></head><body></body></html>

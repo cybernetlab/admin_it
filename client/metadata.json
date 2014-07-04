@@ -1,0 +1,15 @@
+{
+  "resources": [
+    {
+      "id": "users",
+      "name": "Users",
+      "icon": "users"
+    },
+
+    {
+      "id": "roles",
+      "name": "Roles",
+      "icon": "lock"
+    }
+  ]
+}

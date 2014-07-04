@@ -1,6 +1,6 @@
 define(
 
-['jquery', 'underscore', 'backbone'],
+['jquery', 'underscore', 'nestedtypes'],
 
 function($, _, Backbone) {
   'use strict';

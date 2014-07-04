@@ -17,11 +17,11 @@
   "dependencies": {
     "requirejs": "latest",
     "backbone": "latest",
-    "underscore": "latest",
-    "bootstrap": "latest",
-    "fontawesome": "latest"
+    "underscore": "latest"
   },
   "devDependencies": {
-    "mustache": "latest"
+    "mustache": "latest",
+    "bootstrap": "latest",
+    "fontawesome": "latest"
   }
 }
