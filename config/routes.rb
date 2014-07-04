@@ -20,5 +20,5 @@ AdminIt::Engine.routes.draw do
   end
 
   # generates signed urls for S3
-  resources :signed_url, only: :index
+  resources :signed_url, only: :index, controller: 'admin_it/signed_url'
 end

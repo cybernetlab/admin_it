@@ -36,6 +36,9 @@ bundle install
 
 # Changes
 
+`1.2.7`
+* image uploads fixed
+
 `1.2.6`
 * added: geo location picker
 

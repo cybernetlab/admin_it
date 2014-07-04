@@ -18,7 +18,7 @@ module AdminIt
     def s3_upload_policy_document
       Base64.encode64(
         {
-          expiration: 15.minutes.from_now.utc.strftime('%Y-%m-%dT%H:%M:%S.000Z'),
+          expiration: 12.hours.from_now.utc.strftime('%Y-%m-%dT%H:%M:%S.000Z'),
           conditions: [
             { bucket: AdminIt.config.s3[:bucket] },
             { acl: 'public-read' },
@@ -31,9 +31,10 @@ module AdminIt
 
     # sign our request by Base64 encoding the policy document.
     def s3_upload_signature
+      puts AdminIt.config.s3
       Base64.encode64(
         OpenSSL::HMAC.digest(
-          OpenSSL::Digest::Digest.new('sha1'),
+          OpenSSL::Digest.new('sha1'),
           AdminIt.config.s3[:secret_access_key],
           s3_upload_policy_document
         )
