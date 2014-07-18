@@ -18,7 +18,7 @@
 
 / visible fields
 - fields.each do |field|
-  - if field.editor == :image
+  /- if field.type == :image
     - locals = { field: field, for_context: for_context, id: "#{for_context.resource.name}_#{field.name}" }
     = render partial: File.join(%w(admin_it editors hidden)), locals: locals
     - next

@@ -28,6 +28,7 @@ module AdminIt
       dsl_accessor :type, default: TYPES[0]
       dsl_accessor :placeholder
       dsl_accessor :partial
+      dsl_accessor :options, default: {}
       dsl_accessor :editor, default: EDITORS[0]
       dsl_boolean :readable, :writable, :visible, :sortable, :show_label
       dsl_block :read, :write, :render, :display
@@ -42,7 +43,7 @@ module AdminIt
     end
 
     class << self
-      attr_reader :read, :write, :render, :display, :type, :partial
+      attr_reader :read, :write, :render, :display, :type, :partial, :options
 
       protected
 
@@ -78,12 +79,17 @@ module AdminIt
       Class.new(base) do
         @field_name, @entity_class = name, _entity_class
         import_data_module(base)
+        self.type = opts[:type]
         @readable = opts[:readable].nil? ? true : opts[:readable] == true
         @writable = opts[:writable].nil? ? true : opts[:writable] == true
         @visible = opts[:visible].nil? ? true : opts[:visible] == true
         @sortable = opts[:sortable].nil? ? true : opts[:sortable] == true
+        @options = opts[:options].is_a?(Hash) ? opts[:options] : {}
+        if type == :image
+          @options[:s3] = {} unless @options[:s3].is_a?(Hash)
+          @options[:s3] = {}.merge(AdminIt.config.s3, @options[:s3])
+        end
         @show_label = opts[:show_label].nil? ? true : opts[:show_label] == true
-        self.type = opts[:type]
         self.editor = opts[:editor] unless opts[:editor].nil?
       end
     end
@@ -104,6 +110,10 @@ module AdminIt
       @partial ||= nil
     end
 
+    def self.optionis
+      @options ||= {}
+    end
+
     def self.hide
       @visible = false
     end
@@ -120,10 +130,12 @@ module AdminIt
       @editor = EDITORS[0]
     end
 
-    class_attr_reader :entity_class, :display_name, :type, :partial, :editor
+    class_attr_reader :entity_class, :display_name, :type, :partial, :editor,
+                      :options
     attr_writer :visible, :readable, :writable
 
-    def initialize(readable: nil, writable: nil, visible: nil, sortable: nil, show_label: nil)
+    def initialize(readable: nil, writable: nil, visible: nil, sortable: nil,
+                   show_label: nil, options: nil)
       run_callbacks :initialize do
         @readable = readable.nil? ? self.class.readable? : readable == true
         @writable = writable.nil? ? self.class.writable? : writable == true
@@ -226,7 +238,7 @@ module AdminIt
 #    end
 
     def show_value(entity)
-      value = read_value(entity)
+      value = read(entity)
       if type == :enum
         value.text
       elsif type == :geo_point

@@ -23,6 +23,7 @@ module AdminIt
             { bucket: AdminIt.config.s3[:bucket] },
             { acl: 'public-read' },
             ['starts-with', '$key', 'uploads/'],
+            ['starts-with', '$Content-Type', ''],
             { success_action_status: '201' }
           ]
         }.to_json

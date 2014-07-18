@@ -8,11 +8,6 @@
 - elsif for_context.is_a?(AdminIt::EditContext)
   - action = resource.single_path(for_context.entity)
 
-/ images
-- for_context.fields(scope: { editor: :image }).each do |field|
-  - locals = { field: field, for_context: for_context }
-  = render partial: File.join(%w(admin_it editors image)), locals: locals
-
 form.form-horizontal role="form" action=action method="POST"
   input name="authenticity_token" type="hidden" value=form_authenticity_token
   input name="section" type="hidden" value=parent.section

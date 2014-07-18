@@ -27,3 +27,24 @@
 .fileupload-image img, .admin-show-image {
   max-width: 500px;
 }
+
+[data-toggle="file-upload"] {
+  opacity: 0,
+  filter: alpha(opacity:0);
+  font-size: 600px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  border: none;
+  margin-left: -450px;
+}
+
+.file-upload-wrapper {
+  position: absolute;
+  overflow: hidden;
+  z-index: 10000;
+}
+
+#image_image_button {
+  margin-top: 10px;
+}

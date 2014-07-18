@@ -72,6 +72,7 @@ var initTabs = function() {
     $('[data-tab="' + $(e.relatedTarget).attr('href') + '"]').removeClass('in');
     $('[data-tab="' + $(e.target).attr('href') + '"]').addClass('in');
     $('form input[type="hidden"][name="section"]').val($(this).attr('href').substr(1));
+    initTiles();
   });
   var active = $('.active > [data-toggle="tab"]');
   if (active.length > 0) {
@@ -90,33 +91,10 @@ var initLinks = function() {
 }
 
 var initImageUploads = function() {
-  $form = $('form[data-sign-url]');
-  $form.fileupload({
-    url: $form.attr('action'),
-    autoUpload: true,
-    dataType: 'xml',
-    add: function(evt, data) {
-      $.ajax({
-        url: $form.data('signUrl') + '/',
-        type: 'GET',
-        dataType: 'json',
-        data: { doc: { title: data.files[0].name } },
-        async: false,
-        success: function(data) {
-          // Now that we have our data, we update the form so it contains all
-          // the needed data to sign the request
-          $form.find('input[name=key]').val(data.key)
-          $form.find('input[name=policy]').val(data.policy)
-          $form.find('input[name=signature]').val(data.signature)
-        }
-      });
-      data.submit();
-    },
-    success: function(data) {
-      // Here we get the file url on s3 in an xml doc
-      var url = $(data).find('Location').text()
-      $($form.data('input')).val(url) // Update the real input in the other form
-    },
+  $('[data-toggle="file-upload"]').fileUpload({
+    success: function(el, response) {
+      $(el.data('image')).attr('src', response.small_url);
+    }
   });
 }
 
@@ -153,12 +131,12 @@ var initControls = function() {
   initImageUploads();
   initSelects();
   initGeoPickers();
+  initTiles();
 }
 
 $(document).on('ready page:load', function() {
   initPartials();
   // initDialogs();
-  initTiles();
   initTabs();
   initPopups();
   initLinks();
