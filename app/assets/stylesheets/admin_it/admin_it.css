@@ -51,3 +51,11 @@
 #image_image_button {
   margin-top: 10px;
 }
+
+.picker-map {
+  width: 600px !important;
+}
+
+.picker-map-div {
+  height: 400px !important;
+}
