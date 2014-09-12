@@ -37,7 +37,7 @@ module AdminIt
     #
     class Toolbar < WrapIt::Container
       default_tag 'nav'
-      html_class 'navbar'
+      html_class 'navbar admin-it-toolbar'
       child :item, ToolbarItem
       child :button, ToolbarItem, class: 'btn navbar-btn'
       child :buttons, ToolbarButtons

@@ -31,6 +31,7 @@ module AdminIt
 
     dsl do
       dsl_boolean :confirm_destroy
+      dsl_block :render
     end
 
     inherited_class_reader :resource, :entity_class
@@ -227,6 +228,7 @@ module AdminIt
     end
 
     def end_render(template)
+      render
       request = AdminIt::Request.get(controller.request)
       request["admin_it_#{resource.name}_toolbar"] = template.capture do
         @toolbar.render
@@ -235,6 +237,12 @@ module AdminIt
         request['admin_it_top_menu'] = template.capture { @top_menu.render }
 #        @children.each { |c| c.end_render(template) }
       end
+    end
+
+    def render()
+      func = self.class.instance_variable_get(:@render)
+      return if func.nil?
+      instance_exec(self, &func)
     end
 
     def url_params(**params)

@@ -1,2 +1,6 @@
 - context.begin_render(self)
+- if context.show_resource_link
+  - context.toolbar.button '&nbsp;Предварительный просмотр', icon: :eye,
+                           target: '_blank', tag: 'a', add_class: 'btn-info',
+                           href: "#{context.show_resource_link}/#{context.entity.id}"
 = render File.join %w(admin_it shared form)

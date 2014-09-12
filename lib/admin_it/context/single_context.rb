@@ -69,6 +69,7 @@ module AdminIt
   class SingleContext < Context
     dsl do
       dsl_block :entity_getter, :entity_saver, :entity_destroyer
+      dsl_accessor :show_resource_link
 
       dsl_hash_of_objects :sections, single: :section do |name, **opts|
         if @sections.empty?
@@ -84,6 +85,10 @@ module AdminIt
         name == :general ? @sections[:general] : Section.new(name, self)
       end
     end
+
+    #def self.before_configure()
+    #  @show_resource_link = true
+    #end
 
     def self.sections
       (@sections ||= {}).values
@@ -101,7 +106,7 @@ module AdminIt
     end
 
     class_attr_reader :entity_getter, :entity_saver, :entity_destroyer,
-                      :sections
+                      :sections, :show_resource_link
     attr_accessor :entity
 
     after_load do |store: {}, params: {}|
