@@ -127,12 +127,18 @@ var initGeoPickers = function() {
   });
 }
 
+var initSwitches = function() {
+  $('[data-toggle="switch"]').switch()
+}
+
 var initControls = function() {
   initImageUploads();
   initSelects();
   initGeoPickers();
   initTiles();
+  initSwitches();
 }
+
 
 $(document).on('ready page:load', function() {
   initPartials();

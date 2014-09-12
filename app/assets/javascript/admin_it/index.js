@@ -8,4 +8,5 @@
 //= require admin_it/jquery.geolocationpicker.js
 //= require select2
 //= require admin_it/file_upload.js
+//= require admin_it/switch
 //= require admin_it/admin_it

@@ -1,0 +1,10 @@
+- for_context ||= context
+- name ||= "#{for_context.resource.name}[#{field.name}]"
+- id ||= "#{for_context.resource.name}_#{field.name}"
+- value ||= field.read(for_context.entity)
+- opts = { name: name, id: id, value: value }
+
+.btn-group.btn-group-sm< data-toggle="switch" data-value=value.to_s
+  button.btn Да
+  input.form-control type="hidden" *opts
+  button.btn Нет

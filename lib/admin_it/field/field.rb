@@ -19,8 +19,8 @@ module AdminIt
     include ExtendIt::Callbacks
 
     TYPES = %i(unknown integer float string date datetime time relation enum
-               array hash range regexp symbol binary image geo_point)
-    EDITORS = %i(text combo radio image hidden geo_picker)
+               array hash range regexp symbol binary image geo_point boolean)
+    EDITORS = %i(text combo radio image hidden geo_picker boolean)
 
     define_callbacks :initialize
 
@@ -127,6 +127,7 @@ module AdminIt
       return @editor = :image if type == :image
       return @editor = :combo if type == :enum
       return @editor = :geo_picker if type == :geo_point
+      return @editor = :boolean if type == :boolean
       @editor = EDITORS[0]
     end
 
