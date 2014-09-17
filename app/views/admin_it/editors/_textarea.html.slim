@@ -1,0 +1,7 @@
+- for_context ||= context
+- name ||= "#{for_context.resource.name}[#{field.name}]"
+- id ||= "#{for_context.resource.name}_#{field.name}"
+- value ||= field.read(for_context.entity)
+- opts = { name: name, id: id, rows: 3 }
+textarea.form-control *opts
+  == value

@@ -20,7 +20,7 @@ module AdminIt
 
     TYPES = %i(unknown integer float string date datetime time relation enum
                array hash range regexp symbol binary image geo_point boolean)
-    EDITORS = %i(text combo radio image hidden geo_picker boolean)
+    EDITORS = %i(text combo radio image hidden geo_picker boolean textarea)
 
     define_callbacks :initialize
 
